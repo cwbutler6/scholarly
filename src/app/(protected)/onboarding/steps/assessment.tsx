@@ -5,6 +5,9 @@ import Image from "next/image";
 import { saveAssessment } from "../actions";
 
 interface AssessmentStepProps {
+  initialAnswers?: Record<number, number>;
+  initialIndex?: number;
+  onProgress?: (answers: Record<number, number>, index: number) => void;
   onComplete: () => void;
   onBack: () => void;
 }
@@ -37,16 +40,22 @@ const riasecQuestions = [
 ];
 
 const ratings = [
-  { value: 1, label: "Strongly\nDislike", image: "/images/emoji-strongly-dislike.png" },
-  { value: 2, label: "Dislike", image: "/images/emoji-dislike.png" },
-  { value: 3, label: "Unsure", image: "/images/emoji-unsure.png" },
-  { value: 4, label: "Like", image: "/images/emoji-like.png" },
-  { value: 5, label: "Strongly\nLike", image: "/images/emoji-strongly-like.png" },
+  { value: 1, label: "Strongly\nDislike", image: "/images/emoji-strongly-dislike.svg" },
+  { value: 2, label: "Dislike", image: "/images/emoji-dislike.svg" },
+  { value: 3, label: "Unsure", image: "/images/emoji-unsure.svg" },
+  { value: 4, label: "Like", image: "/images/emoji-like.svg" },
+  { value: 5, label: "Strongly\nLike", image: "/images/emoji-strongly-like.svg" },
 ];
 
-export function AssessmentStep({ onComplete, onBack }: AssessmentStepProps) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<number, number>>({});
+export function AssessmentStep({
+  initialAnswers = {},
+  initialIndex = 0,
+  onProgress,
+  onComplete,
+  onBack,
+}: AssessmentStepProps) {
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const [answers, setAnswers] = useState<Record<number, number>>(initialAnswers);
   const [isSaving, setIsSaving] = useState(false);
 
   const currentQuestion = riasecQuestions[currentIndex];
@@ -57,7 +66,9 @@ export function AssessmentStep({ onComplete, onBack }: AssessmentStepProps) {
     setAnswers(newAnswers);
 
     if (currentIndex < riasecQuestions.length - 1) {
-      setTimeout(() => setCurrentIndex(currentIndex + 1), 300);
+      const nextIndex = currentIndex + 1;
+      onProgress?.(newAnswers, nextIndex);
+      setTimeout(() => setCurrentIndex(nextIndex), 300);
     } else {
       setIsSaving(true);
       const scores = calculateScores(newAnswers);
@@ -109,10 +120,10 @@ export function AssessmentStep({ onComplete, onBack }: AssessmentStepProps) {
             >
               <Image
                 src={rating.image}
-                alt={rating.label}
-                width={64}
-                height={64}
-                className="mb-2 h-16 w-16"
+                alt={rating.label.replace("\n", " ")}
+                width={80}
+                height={80}
+                className="mb-2 h-20 w-20 object-contain"
               />
               <span className="text-xs text-gray-600 whitespace-pre-line">
                 {rating.label}
@@ -124,6 +135,7 @@ export function AssessmentStep({ onComplete, onBack }: AssessmentStepProps) {
         <div className="mt-16 flex justify-center gap-4">
           <button
             onClick={onBack}
+            aria-label="Go back to profile"
             className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-900 text-white transition-colors hover:bg-gray-700"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -132,7 +144,12 @@ export function AssessmentStep({ onComplete, onBack }: AssessmentStepProps) {
           </button>
           {currentIndex > 0 && (
             <button
-              onClick={() => setCurrentIndex(currentIndex - 1)}
+              onClick={() => {
+                const prevIndex = currentIndex - 1;
+                setCurrentIndex(prevIndex);
+                onProgress?.(answers, prevIndex);
+              }}
+              aria-label="Previous question"
               className="flex h-12 w-12 items-center justify-center rounded-full border border-gray-300 text-gray-600 transition-colors hover:bg-gray-100"
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

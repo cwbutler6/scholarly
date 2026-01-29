@@ -24,11 +24,11 @@ type ChatMessage = {
   field?: keyof ProfileData;
 };
 
-const questions: { field: keyof ProfileData; question: string; placeholder: string }[] = [
-  { field: "name", question: "What should we call you?", placeholder: "Enter your first and last name" },
-  { field: "email", question: "What's a good email to use to reach you?", placeholder: "Enter your email address" },
-  { field: "location", question: "Where are you located? (not to be creepy)", placeholder: "Search for your city and state" },
-  { field: "birthDate", question: "How old are you? (or we can ask for birth date)", placeholder: "Enter your age (or birth date)" },
+const questions: { field: keyof ProfileData; question: string; placeholder: string; response: string }[] = [
+  { field: "name", question: "What should we call you?", placeholder: "Enter your first and last name", response: "Nice to meet you, {name}!" },
+  { field: "email", question: "What's a good email to use to reach you?", placeholder: "Enter your email address", response: "Got it!" },
+  { field: "location", question: "Where are you located? (not to be creepy)", placeholder: "Search for your city and state", response: "Nice!" },
+  { field: "birthDate", question: "How old are you? (or we can ask for birth date)", placeholder: "Enter your age (or birth date)", response: "Perfect!" },
 ];
 
 export function BuildProfileStep({
@@ -66,6 +66,13 @@ export function BuildProfileStep({
     }
   }, [messages.length]);
 
+  useEffect(() => {
+    const currentField = questions[currentQuestionIndex]?.field;
+    if (currentField && profileData[currentField] && !inputValue) {
+      setInputValue(profileData[currentField]);
+    }
+  }, [currentQuestionIndex, profileData, inputValue]);
+
   const handleSubmit = () => {
     if (!inputValue.trim()) return;
 
@@ -82,13 +89,15 @@ export function BuildProfileStep({
 
     if (nextIndex < questions.length) {
       setTimeout(() => {
-        const responses = ["Nice to meet you, " + inputValue.split(" ")[0] + "!", "Got it!", "Nice!", "Perfect!"];
+        const response = currentQuestion.response.replace("{name}", inputValue.split(" ")[0]);
         setMessages((prev) => [
           ...prev,
-          { id: `r-${currentQuestionIndex}`, role: "bot", content: responses[currentQuestionIndex] || "Got it!" },
+          { id: `r-${currentQuestionIndex}`, role: "bot", content: response },
           { id: `q-${nextIndex}`, role: "bot", content: questions[nextIndex].question, field: questions[nextIndex].field },
         ]);
         setCurrentQuestionIndex(nextIndex);
+        const nextField = questions[nextIndex].field;
+        setInputValue(profileData[nextField] || "");
       }, 300);
     } else {
       setTimeout(() => {
@@ -123,7 +132,7 @@ export function BuildProfileStep({
                 className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 {message.role === "bot" && (
-                  <div className="mr-2 flex-shrink-0">
+                  <div className="mr-2 shrink-0">
                     <Image
                       src="/images/logo-scholarly.svg"
                       alt="Bot"
@@ -164,6 +173,7 @@ export function BuildProfileStep({
               <button
                 onClick={handleSubmit}
                 disabled={!inputValue.trim()}
+                aria-label="Submit"
                 className="flex h-12 w-12 items-center justify-center rounded-full bg-[#00B2FF] text-white transition-colors hover:bg-[#00A0E6] disabled:bg-gray-300"
               >
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -175,6 +185,7 @@ export function BuildProfileStep({
             <div className="flex w-full justify-center gap-4">
               <button
                 onClick={onBack}
+                aria-label="Go back"
                 className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-900 text-white"
               >
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -183,6 +194,7 @@ export function BuildProfileStep({
               </button>
               <button
                 onClick={onComplete}
+                aria-label="Continue"
                 className="flex h-12 w-12 items-center justify-center rounded-full bg-[#00B2FF] text-white"
               >
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

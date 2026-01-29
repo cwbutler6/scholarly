@@ -77,7 +77,13 @@ export async function saveSkills(skills: string[]) {
   // For now, we'll just log and continue - skills table can be added later
   console.log(`Saved skills for user ${user.id}:`, skills);
 
+  await db.user.update({
+    where: { clerkId: userId },
+    data: { onboardingComplete: true },
+  });
+
   revalidatePath("/dashboard");
+  revalidatePath("/onboarding");
 }
 
 export async function updateUserProfile(data: {
