@@ -1,26 +1,81 @@
 @import "tailwindcss";
 
 :root {
+  /* Scholarly Brand Colors */
+  --primary: #315A3F;
+  --primary-foreground: #ffffff;
+  
+  --success: #00A63E;
+  --success-foreground: #ffffff;
+  
+  /* Accent colors (from icons) */
+  --accent-blue: #155DFC;
+  --accent-purple: #9810FA;
+  --accent-pink: #E60076;
+  
+  /* Backgrounds */
   --background: #ffffff;
+  --background-subtle: #F5F5F5;
+  --background-muted: #F2F2F2;
   --foreground: #171717;
+  --foreground-muted: #6b7280;
+  
+  /* Card */
+  --card: #ffffff;
+  --card-foreground: #171717;
+  
+  /* Border */
+  --border: #e5e7eb;
+  --ring: #315A3F;
+  
+  /* Destructive */
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  
+  /* Radius */
+  --radius: 0.75rem;
 }
 
 @theme inline {
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-accent-blue: var(--accent-blue);
+  --color-accent-purple: var(--accent-purple);
+  --color-accent-pink: var(--accent-pink);
   --color-background: var(--background);
+  --color-background-subtle: var(--background-subtle);
+  --color-background-muted: var(--background-muted);
   --color-foreground: var(--foreground);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 4px);
+  --radius-xl: calc(var(--radius) + 8px);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Gradient utility class */
+.gradient-primary {
+  background: linear-gradient(90deg, #9810FA 0%, #E60076 100%);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* Focus ring for accessibility */
+*:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
 }

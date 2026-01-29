@@ -1,36 +1,103 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Scholarly
+
+Career guidance platform for high school students. Helps students explore career paths, understand their interests through RIASEC assessments, and receive AI-powered personalized recommendations.
+
+## Tech Stack
+
+- **Framework:** Next.js 16 (App Router)
+- **Hosting:** Vercel
+- **Database:** Vercel Postgres (Neon)
+- **ORM:** Prisma 7.3
+- **Styling:** Tailwind CSS 4
+- **Components:** shadcn/ui
+- **Auth:** Clerk
+- **Analytics:** PostHog
+- **Monitoring:** Sentry
+- **AI:** OpenAI + Vercel AI SDK
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 22+
+- pnpm 10+
+- Vercel account (for Postgres)
+- Clerk account (for auth)
+
+### Installation
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+# Clone the repository
+git clone https://github.com/your-org/scholarly-v2.git
+cd scholarly-v2
+
+# Install dependencies
+pnpm install
+
+# Set up environment variables
+cp .env.example .env.local
+# Fill in your environment variables
+
+# Generate Prisma client
+pnpm db:generate
+
+# Push schema to database
+pnpm db:push
+
+# Seed the database with O*NET data
+pnpm db:seed
+
+# Start development server
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to see the app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── (auth)/            # Auth routes (sign-in, sign-up)
+│   ├── (app)/             # Protected app routes
+│   ├── onboarding/        # Onboarding flow
+│   ├── api/               # API Route Handlers
+│   ├── proxy.ts           # Route protection (formerly middleware)
+│   └── globals.css        # Global styles
+├── components/
+│   ├── ui/                # shadcn/ui components
+│   └── ...                # Feature components
+├── lib/
+│   ├── db.ts              # Prisma client
+│   ├── ai.ts              # OpenAI configuration
+│   └── actions/           # Server Actions
+└── prisma/
+    ├── schema.prisma      # Database schema
+    └── seed.ts            # O*NET data seeding
+```
 
-## Learn More
+## Environment Variables
 
-To learn more about Next.js, take a look at the following resources:
+See `.env.example` for all required environment variables.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Scripts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Command | Description |
+|---------|-------------|
+| `pnpm dev` | Start dev server with Turbopack |
+| `pnpm build` | Build for production |
+| `pnpm start` | Start production server |
+| `pnpm lint` | Run ESLint |
+| `pnpm format` | Format with Prettier |
+| `pnpm db:generate` | Generate Prisma client |
+| `pnpm db:push` | Push schema to database |
+| `pnpm db:studio` | Open Prisma Studio |
+| `pnpm db:seed` | Seed database with O*NET data |
 
-## Deploy on Vercel
+## Contributing
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for development guidelines.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## License
+
+Private - All rights reserved.
