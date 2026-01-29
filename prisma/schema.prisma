@@ -1,0 +1,119 @@
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// User profile linked to Clerk authentication
+model User {
+  id        String   @id @default(cuid())
+  clerkId   String   @unique @map("clerk_id")
+  email     String   @unique
+  firstName String?  @map("first_name")
+  lastName  String?  @map("last_name")
+  grade     Int?
+  schoolId  String?  @map("school_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  assessments    Assessment[]
+  savedCareers   SavedCareer[]
+  chatSessions   ChatSession[]
+
+  @@map("users")
+}
+
+/// RIASEC assessment results
+model Assessment {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  type        String   @default("riasec")
+  realistic   Int      @default(0)
+  investigative Int    @default(0)
+  artistic    Int      @default(0)
+  social      Int      @default(0)
+  enterprising Int     @default(0)
+  conventional Int     @default(0)
+  completedAt DateTime? @map("completed_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("assessments")
+}
+
+/// Careers saved by users for later reference
+model SavedCareer {
+  id           String   @id @default(cuid())
+  userId       String   @map("user_id")
+  occupationId String   @map("occupation_id")
+  notes        String?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  occupation Occupation @relation(fields: [occupationId], references: [id])
+
+  @@unique([userId, occupationId])
+  @@map("saved_careers")
+}
+
+/// O*NET occupation data
+model Occupation {
+  id              String  @id
+  title           String
+  description     String?
+  jobZone         Int?    @map("job_zone")
+  brightOutlook   Boolean @default(false) @map("bright_outlook")
+  greenOccupation Boolean @default(false) @map("green_occupation")
+
+  riasecRealistic     Int? @map("riasec_realistic")
+  riasecInvestigative Int? @map("riasec_investigative")
+  riasecArtistic      Int? @map("riasec_artistic")
+  riasecSocial        Int? @map("riasec_social")
+  riasecEnterprising  Int? @map("riasec_enterprising")
+  riasecConventional  Int? @map("riasec_conventional")
+
+  medianWage    Int?    @map("median_wage")
+  jobGrowth     String? @map("job_growth")
+  totalEmployment Int?  @map("total_employment")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  savedBy SavedCareer[]
+
+  @@index([jobZone])
+  @@index([brightOutlook])
+  @@map("occupations")
+}
+
+/// AI chat sessions for career coaching
+model ChatSession {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  title     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages ChatMessage[]
+
+  @@map("chat_sessions")
+}
+
+/// Individual messages in a chat session
+model ChatMessage {
+  id        String   @id @default(cuid())
+  sessionId String   @map("session_id")
+  role      String
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  session ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("chat_messages")
+}
