@@ -6,9 +6,10 @@ import { toggleSaveCareer, type CareerWithMatch } from "@/lib/careers";
 
 interface CareerListProps {
   initialCareers: CareerWithMatch[];
+  from?: "dashboard" | "explore";
 }
 
-export function CareerList({ initialCareers }: CareerListProps) {
+export function CareerList({ initialCareers, from }: CareerListProps) {
   const [careers, setCareers] = useState(initialCareers);
   const [, startTransition] = useTransition();
 
@@ -42,6 +43,7 @@ export function CareerList({ initialCareers }: CareerListProps) {
             growth={career.growth || undefined}
             isSaved={career.isSaved}
             onSave={() => handleSave(career.id)}
+            from={from}
           />
         ))
       )}

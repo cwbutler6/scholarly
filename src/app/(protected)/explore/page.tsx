@@ -65,7 +65,7 @@ export default async function ExplorePage() {
             Discover career paths that match your interests and skills
           </p>
 
-          <CareerList initialCareers={careers} />
+          <CareerList initialCareers={careers} from="explore" />
         </section>
 
         <section>

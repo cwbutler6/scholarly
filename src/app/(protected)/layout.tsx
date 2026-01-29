@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { getOrCreateUser } from "@/lib/user";
@@ -27,7 +28,9 @@ export default async function ProtectedLayout({
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar />
+      <Suspense fallback={<aside className="fixed left-0 top-0 z-40 flex h-screen w-16 flex-col items-center border-r bg-white py-6" />}>
+        <Sidebar />
+      </Suspense>
       <main className="ml-16 w-0 flex-1 overflow-x-hidden">{children}</main>
     </div>
   );

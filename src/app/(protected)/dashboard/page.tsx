@@ -119,7 +119,7 @@ export default async function DashboardPage() {
             <p className="text-sm text-gray-500">Based on your interests and skills</p>
           </div>
 
-          <CareerList initialCareers={careers} />
+          <CareerList initialCareers={careers} from="dashboard" />
 
           <div className="mt-6 flex justify-center">
             <Link

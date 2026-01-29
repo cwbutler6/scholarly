@@ -8,10 +8,13 @@ import { ConvictionScore } from "./conviction-score";
 
 interface CareerPageProps {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ from?: string }>;
 }
 
-export default async function CareerPage({ params }: CareerPageProps) {
+export default async function CareerPage({ params, searchParams }: CareerPageProps) {
   const { id } = await params;
+  const { from } = await searchParams;
+  const fromSource = from === "dashboard" || from === "explore" ? from : undefined;
   const [career, relatedCareers] = await Promise.all([
     getCareerById(id),
     getRecommendedCareers(10),
@@ -250,7 +253,7 @@ export default async function CareerPage({ params }: CareerPageProps) {
           <h2 className="mb-6 text-2xl font-bold text-gray-900">
             Recommended Careers
           </h2>
-          <CareerList initialCareers={relatedCareers.filter((c) => c.id !== career.id)} />
+          <CareerList initialCareers={relatedCareers.filter((c) => c.id !== career.id)} from={fromSource} />
         </section>
       </div>
     </div>

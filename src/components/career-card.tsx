@@ -15,6 +15,7 @@ interface CareerCardProps {
   growth?: string;
   isSaved?: boolean;
   onSave?: () => void;
+  from?: "dashboard" | "explore";
 }
 
 export function CareerCard({
@@ -27,6 +28,7 @@ export function CareerCard({
   growth,
   isSaved = false,
   onSave,
+  from,
 }: CareerCardProps) {
   const formatGrowth = (g: string | undefined) => {
     if (!g) return "N/A";
@@ -92,7 +94,7 @@ export function CareerCard({
         </div>
 
         <Link
-          href={`/careers/${id}`}
+          href={`/careers/${id}${from ? `?from=${from}` : ""}`}
           className="mt-auto flex h-11 items-center justify-center gap-1.5 rounded-[12px] bg-[#010101] text-base font-medium text-white transition-colors hover:bg-gray-800"
         >
           View Career
