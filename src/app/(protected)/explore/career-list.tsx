@@ -36,6 +36,7 @@ export function CareerList({ initialCareers }: CareerListProps) {
             id={career.id}
             title={career.title}
             description={career.description || "Explore this career path"}
+            imageUrl={career.imageUrl || undefined}
             matchPercent={career.matchPercent}
             salary={career.salary || undefined}
             growth={career.growth || undefined}

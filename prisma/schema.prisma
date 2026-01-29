@@ -68,6 +68,7 @@ model Occupation {
   id              String  @id
   title           String
   description     String?
+  imageUrl        String? @map("image_url")
   jobZone         Int?    @map("job_zone")
   brightOutlook   Boolean @default(false) @map("bright_outlook")
   greenOccupation Boolean @default(false) @map("green_occupation")

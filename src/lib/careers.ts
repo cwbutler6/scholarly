@@ -2,11 +2,13 @@
 
 import { db } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/user";
+import { getCareerImageUrl } from "@/lib/unsplash";
 
 export interface CareerWithMatch {
   id: string;
   title: string;
   description: string | null;
+  imageUrl: string | null;
   matchPercent: number;
   salary: string | null;
   growth: string | null;
@@ -101,15 +103,34 @@ export async function getRecommendedCareers(limit = 10): Promise<CareerWithMatch
     c: assessment.conventional,
   } : null;
 
-  return occupations.map((occ) => ({
-    id: occ.id,
-    title: occ.title,
-    description: occ.description,
-    matchPercent: calculateMatch(userScores, occ),
-    salary: formatSalary(occ.medianWage),
-    growth: occ.jobGrowth,
-    isSaved: savedIds.has(occ.id),
-  }));
+  const careersWithImages = await Promise.all(
+    occupations.map(async (occ) => {
+      let imageUrl = occ.imageUrl;
+      
+      if (!imageUrl) {
+        imageUrl = await getCareerImageUrl(occ.title);
+        if (imageUrl) {
+          db.occupation.update({
+            where: { id: occ.id },
+            data: { imageUrl },
+          }).catch(() => {});
+        }
+      }
+
+      return {
+        id: occ.id,
+        title: occ.title,
+        description: occ.description,
+        imageUrl,
+        matchPercent: calculateMatch(userScores, occ),
+        salary: formatSalary(occ.medianWage),
+        growth: occ.jobGrowth,
+        isSaved: savedIds.has(occ.id),
+      };
+    })
+  );
+
+  return careersWithImages;
 }
 
 export async function toggleSaveCareer(occupationId: string): Promise<boolean> {
@@ -175,13 +196,32 @@ export async function searchCareers(query: string): Promise<CareerWithMatch[]> {
     c: assessment.conventional,
   } : null;
 
-  return occupations.map((occ) => ({
-    id: occ.id,
-    title: occ.title,
-    description: occ.description,
-    matchPercent: calculateMatch(userScores, occ),
-    salary: formatSalary(occ.medianWage),
-    growth: occ.jobGrowth,
-    isSaved: savedIds.has(occ.id),
-  }));
+  const careersWithImages = await Promise.all(
+    occupations.map(async (occ) => {
+      let imageUrl = occ.imageUrl;
+      
+      if (!imageUrl) {
+        imageUrl = await getCareerImageUrl(occ.title);
+        if (imageUrl) {
+          db.occupation.update({
+            where: { id: occ.id },
+            data: { imageUrl },
+          }).catch(() => {});
+        }
+      }
+
+      return {
+        id: occ.id,
+        title: occ.title,
+        description: occ.description,
+        imageUrl,
+        matchPercent: calculateMatch(userScores, occ),
+        salary: formatSalary(occ.medianWage),
+        growth: occ.jobGrowth,
+        isSaved: savedIds.has(occ.id),
+      };
+    })
+  );
+
+  return careersWithImages;
 }
