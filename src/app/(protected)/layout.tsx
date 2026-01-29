@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { getOrCreateUser } from "@/lib/user";
+import { Sidebar } from "@/components/sidebar";
 
 /**
  * Server Layout Guard for protected routes.
@@ -24,5 +25,10 @@ export default async function ProtectedLayout({
     redirect("/onboarding");
   }
 
-  return <>{children}</>;
+  return (
+    <div className="flex min-h-screen">
+      <Sidebar />
+      <main className="ml-16 flex-1">{children}</main>
+    </div>
+  );
 }
