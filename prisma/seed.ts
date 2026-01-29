@@ -18,7 +18,9 @@ const sampleOccupations = [
     id: "15-1252.00",
     title: "Software Developers",
     description:
-      "Research, design, and develop computer and network software or specialized utility programs.",
+      "Software Engineers apply engineering principles to the design, development, maintenance, testing, and evaluation of computer software. They are the architects behind the digital world, creating everything from mobile apps to enterprise operating systems.",
+    category: "Technology",
+    education: "Bachelor's in CS or Bootcamp",
     jobZone: 4,
     brightOutlook: true,
     greenOccupation: false,
@@ -28,15 +30,18 @@ const sampleOccupations = [
     riasecSocial: 2,
     riasecEnterprising: 3,
     riasecConventional: 4,
-    medianWage: 127260,
-    jobGrowth: "Much faster than average",
+    medianWage: 85000,
+    medianWageHigh: 170000,
+    jobGrowth: "22",
     totalEmployment: 1795300,
   },
   {
     id: "29-1141.00",
     title: "Registered Nurses",
     description:
-      "Assess patient health problems and needs, develop and implement nursing care plans.",
+      "Assess patient health problems and needs, develop and implement nursing care plans, and maintain medical records.",
+    category: "Healthcare",
+    education: "Bachelor's in Nursing",
     jobZone: 3,
     brightOutlook: true,
     greenOccupation: false,
@@ -46,15 +51,18 @@ const sampleOccupations = [
     riasecSocial: 6,
     riasecEnterprising: 2,
     riasecConventional: 4,
-    medianWage: 81220,
-    jobGrowth: "Faster than average",
+    medianWage: 65000,
+    medianWageHigh: 120000,
+    jobGrowth: "12",
     totalEmployment: 3175390,
   },
   {
     id: "27-1024.00",
     title: "Graphic Designers",
     description:
-      "Design or create graphics to meet specific commercial or promotional needs.",
+      "Design or create graphics to meet specific commercial or promotional needs, such as packaging, displays, or logos.",
+    category: "Design",
+    education: "Bachelor's in Design",
     jobZone: 3,
     brightOutlook: false,
     greenOccupation: false,
@@ -64,15 +72,18 @@ const sampleOccupations = [
     riasecSocial: 2,
     riasecEnterprising: 4,
     riasecConventional: 3,
-    medianWage: 57990,
-    jobGrowth: "Average",
+    medianWage: 45000,
+    medianWageHigh: 90000,
+    jobGrowth: "3",
     totalEmployment: 264800,
   },
   {
     id: "25-2021.00",
     title: "Elementary School Teachers",
     description:
-      "Teach academic and social skills to students at the elementary school level.",
+      "Teach academic and social skills to students at the elementary school level, preparing them for future academic success.",
+    category: "Education",
+    education: "Bachelor's in Education",
     jobZone: 4,
     brightOutlook: false,
     greenOccupation: false,
@@ -82,15 +93,18 @@ const sampleOccupations = [
     riasecSocial: 6,
     riasecEnterprising: 3,
     riasecConventional: 3,
-    medianWage: 61690,
-    jobGrowth: "Average",
+    medianWage: 50000,
+    medianWageHigh: 85000,
+    jobGrowth: "4",
     totalEmployment: 1395830,
   },
   {
     id: "11-1021.00",
     title: "General and Operations Managers",
     description:
-      "Plan, direct, or coordinate the operations of public or private sector organizations.",
+      "Plan, direct, or coordinate the operations of public or private sector organizations, overseeing multiple departments.",
+    category: "Business",
+    education: "Bachelor's in Business",
     jobZone: 4,
     brightOutlook: true,
     greenOccupation: false,
@@ -100,15 +114,18 @@ const sampleOccupations = [
     riasecSocial: 4,
     riasecEnterprising: 6,
     riasecConventional: 4,
-    medianWage: 101280,
-    jobGrowth: "Faster than average",
+    medianWage: 80000,
+    medianWageHigh: 150000,
+    jobGrowth: "8",
     totalEmployment: 3011570,
   },
   {
     id: "47-2111.00",
     title: "Electricians",
     description:
-      "Install, maintain, and repair electrical wiring, equipment, and fixtures.",
+      "Install, maintain, and repair electrical wiring, equipment, and fixtures in residential, commercial, and industrial settings.",
+    category: "Trades",
+    education: "Apprenticeship",
     jobZone: 3,
     brightOutlook: true,
     greenOccupation: true,
@@ -118,11 +135,48 @@ const sampleOccupations = [
     riasecSocial: 2,
     riasecEnterprising: 3,
     riasecConventional: 3,
-    medianWage: 61590,
-    jobGrowth: "Faster than average",
+    medianWage: 50000,
+    medianWageHigh: 100000,
+    jobGrowth: "11",
     totalEmployment: 726200,
   },
 ];
+
+const occupationSkills: Record<string, { technical: string[]; soft: string[] }> = {
+  "15-1252.00": {
+    technical: ["JavaScript", "Python", "Java", "C++", "React", "Node.js", "SQL", "Git", "Docker", "AWS", "TypeScript", "REST APIs", "GraphQL", "MongoDB", "PostgreSQL", "Redis", "Kubernetes", "CI/CD", "Testing", "Agile"],
+    soft: ["Problem Solving", "Communication", "Teamwork", "Critical Thinking", "Time Management", "Adaptability", "Attention to Detail", "Creativity", "Leadership", "Continuous Learning"],
+  },
+  "29-1141.00": {
+    technical: ["Patient Assessment", "Medication Administration", "IV Therapy", "Wound Care", "Electronic Health Records", "Vital Signs Monitoring", "CPR/BLS", "Patient Education", "Care Planning", "Medical Equipment"],
+    soft: ["Empathy", "Communication", "Attention to Detail", "Critical Thinking", "Stress Management", "Teamwork", "Patience", "Compassion", "Decision Making", "Adaptability"],
+  },
+  "27-1024.00": {
+    technical: ["Adobe Photoshop", "Adobe Illustrator", "Figma", "Sketch", "InDesign", "Typography", "Color Theory", "Layout Design", "Branding", "UI/UX Design", "Motion Graphics", "Print Design", "Web Design"],
+    soft: ["Creativity", "Communication", "Attention to Detail", "Time Management", "Collaboration", "Adaptability", "Problem Solving", "Client Management", "Presentation Skills"],
+  },
+  "25-2021.00": {
+    technical: ["Curriculum Development", "Lesson Planning", "Classroom Management", "Assessment Design", "Educational Technology", "Differentiated Instruction", "Special Education", "Parent Communication", "Student Progress Tracking"],
+    soft: ["Patience", "Communication", "Creativity", "Organization", "Empathy", "Leadership", "Adaptability", "Conflict Resolution", "Cultural Sensitivity", "Enthusiasm"],
+  },
+  "11-1021.00": {
+    technical: ["Strategic Planning", "Budget Management", "Project Management", "Data Analysis", "Performance Metrics", "Process Improvement", "Risk Management", "Vendor Relations", "Compliance", "ERP Systems"],
+    soft: ["Leadership", "Communication", "Decision Making", "Problem Solving", "Negotiation", "Team Building", "Strategic Thinking", "Time Management", "Delegation", "Conflict Resolution"],
+  },
+  "47-2111.00": {
+    technical: ["Electrical Wiring", "Circuit Installation", "Code Compliance", "Blueprint Reading", "Troubleshooting", "Safety Protocols", "Power Tools", "PLC Programming", "Testing Equipment", "Conduit Bending"],
+    soft: ["Attention to Detail", "Problem Solving", "Physical Stamina", "Communication", "Safety Awareness", "Time Management", "Customer Service", "Reliability", "Teamwork"],
+  },
+};
+
+const occupationAbilities: Record<string, string[]> = {
+  "15-1252.00": ["Debugging", "Code Review", "System Design", "Database Design", "API Design", "Performance Optimization", "Security Best Practices", "Technical Writing", "Troubleshooting", "Architecture Planning", "Refactoring", "Testing & QA"],
+  "29-1141.00": ["Clinical Reasoning", "Patient Advocacy", "Emergency Response", "Health Education", "Team Coordination", "Documentation", "Quality Assurance", "Resource Management", "Cultural Competence", "Infection Control"],
+  "27-1024.00": ["Visual Storytelling", "Brand Development", "Creative Direction", "Photo Editing", "Concept Development", "Client Presentation", "Design Systems", "Prototyping", "User Research", "Asset Management"],
+  "25-2021.00": ["Student Engagement", "Academic Assessment", "Behavior Management", "Learning Environment", "Parent Relations", "Professional Development", "Cross-Curricular Integration", "Student Counseling", "Event Planning"],
+  "11-1021.00": ["Organizational Development", "Change Management", "Financial Analysis", "Stakeholder Management", "Policy Development", "Talent Management", "Business Development", "Crisis Management", "Reporting", "Quality Control"],
+  "47-2111.00": ["Electrical Inspection", "Load Calculation", "System Upgrade", "Preventive Maintenance", "Equipment Installation", "Wiring Diagnosis", "Energy Efficiency", "Project Estimation", "Permit Acquisition"],
+};
 
 async function main() {
   console.log("Seeding database...");
@@ -134,9 +188,40 @@ async function main() {
       create: occupation,
     });
     console.log(`  Upserted: ${occupation.title}`);
+
+    const skills = occupationSkills[occupation.id];
+    if (skills) {
+      for (const skill of skills.technical) {
+        await prisma.occupationSkill.upsert({
+          where: { occupationId_name: { occupationId: occupation.id, name: skill } },
+          update: { type: "technical", importance: 80 },
+          create: { occupationId: occupation.id, name: skill, type: "technical", importance: 80 },
+        });
+      }
+      for (const skill of skills.soft) {
+        await prisma.occupationSkill.upsert({
+          where: { occupationId_name: { occupationId: occupation.id, name: skill } },
+          update: { type: "soft", importance: 70 },
+          create: { occupationId: occupation.id, name: skill, type: "soft", importance: 70 },
+        });
+      }
+      console.log(`    Added ${skills.technical.length + skills.soft.length} skills`);
+    }
+
+    const abilities = occupationAbilities[occupation.id];
+    if (abilities) {
+      for (const ability of abilities) {
+        await prisma.occupationAbility.upsert({
+          where: { occupationId_name: { occupationId: occupation.id, name: ability } },
+          update: { importance: 75 },
+          create: { occupationId: occupation.id, name: ability, importance: 75 },
+        });
+      }
+      console.log(`    Added ${abilities.length} abilities`);
+    }
   }
 
-  console.log(`\nSeeded ${sampleOccupations.length} occupations`);
+  console.log(`\nSeeded ${sampleOccupations.length} occupations with skills and abilities`);
 }
 
 main()

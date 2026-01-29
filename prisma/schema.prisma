@@ -69,9 +69,11 @@ model Occupation {
   title           String
   description     String?
   imageUrl        String? @map("image_url")
+  category        String?
   jobZone         Int?    @map("job_zone")
   brightOutlook   Boolean @default(false) @map("bright_outlook")
   greenOccupation Boolean @default(false) @map("green_occupation")
+  education       String?
 
   riasecRealistic     Int? @map("riasec_realistic")
   riasecInvestigative Int? @map("riasec_investigative")
@@ -80,18 +82,49 @@ model Occupation {
   riasecEnterprising  Int? @map("riasec_enterprising")
   riasecConventional  Int? @map("riasec_conventional")
 
-  medianWage    Int?    @map("median_wage")
-  jobGrowth     String? @map("job_growth")
-  totalEmployment Int?  @map("total_employment")
+  medianWage      Int?    @map("median_wage")
+  medianWageHigh  Int?    @map("median_wage_high")
+  jobGrowth       String? @map("job_growth")
+  totalEmployment Int?    @map("total_employment")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  savedBy SavedCareer[]
+  savedBy   SavedCareer[]
+  skills    OccupationSkill[]
+  abilities OccupationAbility[]
 
   @@index([jobZone])
   @@index([brightOutlook])
+  @@index([category])
   @@map("occupations")
+}
+
+/// Skills associated with an occupation
+model OccupationSkill {
+  id           String @id @default(cuid())
+  occupationId String @map("occupation_id")
+  name         String
+  type         String @default("technical")
+  importance   Int?
+
+  occupation Occupation @relation(fields: [occupationId], references: [id], onDelete: Cascade)
+
+  @@unique([occupationId, name])
+  @@map("occupation_skills")
+}
+
+/// Abilities associated with an occupation
+model OccupationAbility {
+  id           String @id @default(cuid())
+  occupationId String @map("occupation_id")
+  name         String
+  importance   Int?
+
+  occupation Occupation @relation(fields: [occupationId], references: [id], onDelete: Cascade)
+
+  @@unique([occupationId, name])
+  @@map("occupation_abilities")
 }
 
 /// AI chat sessions for career coaching

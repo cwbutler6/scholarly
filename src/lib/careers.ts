@@ -15,6 +15,25 @@ export interface CareerWithMatch {
   isSaved: boolean;
 }
 
+export interface CareerDetail {
+  id: string;
+  title: string;
+  description: string | null;
+  imageUrl: string | null;
+  category: string | null;
+  education: string | null;
+  salaryLow: string | null;
+  salaryHigh: string | null;
+  growth: string | null;
+  matchPercent: number;
+  isSaved: boolean;
+  skills: {
+    technical: string[];
+    soft: string[];
+  };
+  abilities: string[];
+}
+
 function formatSalary(medianWage: number | null): string | null {
   if (!medianWage) return null;
   if (medianWage >= 1000) {
@@ -224,4 +243,91 @@ export async function searchCareers(query: string): Promise<CareerWithMatch[]> {
   );
 
   return careersWithImages;
+}
+
+export async function getCareerById(id: string): Promise<CareerDetail | null> {
+  const user = await getOrCreateUser();
+
+  const [occupation, savedCareers, assessment] = await Promise.all([
+    db.occupation.findUnique({
+      where: { id },
+      include: {
+        skills: true,
+        abilities: true,
+      },
+    }),
+    user
+      ? db.savedCareer.findMany({
+          where: { userId: user.id },
+          select: { occupationId: true },
+        })
+      : [],
+    user
+      ? db.assessment.findFirst({
+          where: { userId: user.id },
+          orderBy: { createdAt: "desc" },
+        })
+      : null,
+  ]);
+
+  if (!occupation) return null;
+
+  const savedIds = new Set(savedCareers.map((s) => s.occupationId));
+
+  const userScores = assessment
+    ? {
+        r: assessment.realistic,
+        i: assessment.investigative,
+        a: assessment.artistic,
+        s: assessment.social,
+        e: assessment.enterprising,
+        c: assessment.conventional,
+      }
+    : null;
+
+  let imageUrl = occupation.imageUrl;
+  if (!imageUrl) {
+    imageUrl = await getCareerImageUrl(occupation.title);
+    if (imageUrl) {
+      db.occupation
+        .update({
+          where: { id: occupation.id },
+          data: { imageUrl },
+        })
+        .catch(() => {});
+    }
+  }
+
+  const technicalSkills = occupation.skills
+    .filter((s) => s.type === "technical")
+    .sort((a, b) => (b.importance || 0) - (a.importance || 0))
+    .map((s) => s.name);
+
+  const softSkills = occupation.skills
+    .filter((s) => s.type === "soft")
+    .sort((a, b) => (b.importance || 0) - (a.importance || 0))
+    .map((s) => s.name);
+
+  const abilities = occupation.abilities
+    .sort((a, b) => (b.importance || 0) - (a.importance || 0))
+    .map((a) => a.name);
+
+  return {
+    id: occupation.id,
+    title: occupation.title,
+    description: occupation.description,
+    imageUrl,
+    category: occupation.category,
+    education: occupation.education,
+    salaryLow: formatSalary(occupation.medianWage),
+    salaryHigh: formatSalary(occupation.medianWageHigh),
+    growth: occupation.jobGrowth,
+    matchPercent: calculateMatch(userScores, occupation),
+    isSaved: savedIds.has(occupation.id),
+    skills: {
+      technical: technicalSkills,
+      soft: softSkills,
+    },
+    abilities,
+  };
 }
