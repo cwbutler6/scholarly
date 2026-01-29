@@ -1,24 +1,24 @@
-import { Pool, neonConfig } from "@neondatabase/serverless";
+import { neonConfig } from "@neondatabase/serverless";
 import { PrismaNeon } from "@prisma/adapter-neon";
 import { PrismaClient } from "@prisma/client";
 import ws from "ws";
 
 neonConfig.webSocketConstructor = ws;
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const adapter = new PrismaNeon(pool);
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  throw new Error("DATABASE_URL is required");
+}
+
+const adapter = new PrismaNeon({ connectionString });
 const prisma = new PrismaClient({ adapter });
 
-/**
- * Sample O*NET occupations for development.
- * Real data will be ingested from O*NET bulk downloads.
- */
 const sampleOccupations = [
   {
     id: "15-1252.00",
     title: "Software Developers",
     description:
-      "Research, design, and develop computer and network software or specialized utility programs. Analyze user needs and develop software solutions, applying principles and techniques of computer science, engineering, and mathematical analysis.",
+      "Research, design, and develop computer and network software or specialized utility programs.",
     jobZone: 4,
     brightOutlook: true,
     greenOccupation: false,
@@ -36,7 +36,7 @@ const sampleOccupations = [
     id: "29-1141.00",
     title: "Registered Nurses",
     description:
-      "Assess patient health problems and needs, develop and implement nursing care plans, and maintain medical records. Administer nursing care to ill, injured, convalescent, or disabled patients.",
+      "Assess patient health problems and needs, develop and implement nursing care plans.",
     jobZone: 3,
     brightOutlook: true,
     greenOccupation: false,
@@ -54,7 +54,7 @@ const sampleOccupations = [
     id: "27-1024.00",
     title: "Graphic Designers",
     description:
-      "Design or create graphics to meet specific commercial or promotional needs, such as packaging, displays, or logos. May use a variety of mediums to achieve artistic or decorative effects.",
+      "Design or create graphics to meet specific commercial or promotional needs.",
     jobZone: 3,
     brightOutlook: false,
     greenOccupation: false,
@@ -72,7 +72,7 @@ const sampleOccupations = [
     id: "25-2021.00",
     title: "Elementary School Teachers",
     description:
-      "Teach academic and social skills to students at the elementary school level. Plan and present lessons on a variety of subjects.",
+      "Teach academic and social skills to students at the elementary school level.",
     jobZone: 4,
     brightOutlook: false,
     greenOccupation: false,
@@ -90,7 +90,7 @@ const sampleOccupations = [
     id: "11-1021.00",
     title: "General and Operations Managers",
     description:
-      "Plan, direct, or coordinate the operations of public or private sector organizations. Formulate policies, manage daily operations, and plan the use of materials and human resources.",
+      "Plan, direct, or coordinate the operations of public or private sector organizations.",
     jobZone: 4,
     brightOutlook: true,
     greenOccupation: false,
@@ -105,28 +105,10 @@ const sampleOccupations = [
     totalEmployment: 3011570,
   },
   {
-    id: "43-3031.00",
-    title: "Bookkeeping, Accounting, and Auditing Clerks",
-    description:
-      "Compute, classify, and record numerical data to keep financial records complete. Perform any combination of routine calculating, posting, and verifying duties.",
-    jobZone: 3,
-    brightOutlook: false,
-    greenOccupation: false,
-    riasecRealistic: 2,
-    riasecInvestigative: 2,
-    riasecArtistic: 1,
-    riasecSocial: 2,
-    riasecEnterprising: 3,
-    riasecConventional: 6,
-    medianWage: 47440,
-    jobGrowth: "Declining",
-    totalEmployment: 1528600,
-  },
-  {
     id: "47-2111.00",
     title: "Electricians",
     description:
-      "Install, maintain, and repair electrical wiring, equipment, and fixtures. Ensure that work is in accordance with relevant codes.",
+      "Install, maintain, and repair electrical wiring, equipment, and fixtures.",
     jobZone: 3,
     brightOutlook: true,
     greenOccupation: true,
@@ -139,24 +121,6 @@ const sampleOccupations = [
     medianWage: 61590,
     jobGrowth: "Faster than average",
     totalEmployment: 726200,
-  },
-  {
-    id: "19-2041.00",
-    title: "Environmental Scientists and Specialists",
-    description:
-      "Conduct research or perform investigation for the purpose of identifying, abating, or eliminating sources of pollutants or hazards that affect the environment or public health.",
-    jobZone: 4,
-    brightOutlook: true,
-    greenOccupation: true,
-    riasecRealistic: 3,
-    riasecInvestigative: 6,
-    riasecArtistic: 1,
-    riasecSocial: 3,
-    riasecEnterprising: 3,
-    riasecConventional: 3,
-    medianWage: 78980,
-    jobGrowth: "Faster than average",
-    totalEmployment: 86900,
   },
 ];
 
