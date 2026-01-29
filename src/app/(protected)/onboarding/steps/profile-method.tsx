@@ -62,6 +62,7 @@ export function ProfileMethodStep({ onSelectMethod }: ProfileMethodStepProps) {
 
         <div className="mt-12 flex justify-center">
           <button
+            title="Build your profile"
             onClick={() => onSelectMethod("build")}
             className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-900 text-white transition-colors hover:bg-gray-700"
           >

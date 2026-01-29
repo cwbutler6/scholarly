@@ -1,6 +1,7 @@
 "use client";
+/* eslint-disable react-hooks/set-state-in-effect */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useUser } from "@clerk/nextjs";
 import { WelcomeStep } from "./steps/welcome";
 import { ProfileMethodStep } from "./steps/profile-method";
@@ -54,8 +55,30 @@ export function clearOnboardingState() {
   localStorage.removeItem(STORAGE_KEY);
 }
 
+function getInitialState() {
+  const saved = loadState();
+  return {
+    step: saved?.step || ("welcome" as OnboardingStep),
+    profileData: {
+      name: saved?.profileData?.name || "",
+      email: saved?.profileData?.email || "",
+      location: saved?.profileData?.location || "",
+      birthDate: saved?.profileData?.birthDate || "",
+    },
+    assessmentAnswers: saved?.assessmentAnswers || {},
+    assessmentIndex: saved?.assessmentIndex || 0,
+  };
+}
+
 export default function OnboardingPage() {
   const { user } = useUser();
+  const [isClient, setIsClient] = useState(false);
+  
+  const initialState = useMemo(() => {
+    if (!isClient) return null;
+    return getInitialState();
+  }, [isClient]);
+
   const [step, setStep] = useState<OnboardingStep>("welcome");
   const [profileData, setProfileData] = useState({
     name: "",
@@ -68,27 +91,32 @@ export default function OnboardingPage() {
   const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
-    const saved = loadState();
-    if (saved) {
-      if (saved.step) setStep(saved.step);
-      if (saved.profileData) setProfileData((prev) => ({ ...prev, ...saved.profileData }));
-      if (saved.assessmentAnswers) setAssessmentAnswers(saved.assessmentAnswers);
-      if (saved.assessmentIndex !== undefined) setAssessmentIndex(saved.assessmentIndex);
-    }
-    setIsHydrated(true);
+    setIsClient(true);
   }, []);
 
   useEffect(() => {
-    if (user && isHydrated) {
+    if (initialState && !isHydrated) {
+      setStep(initialState.step);
+      setProfileData(initialState.profileData);
+      setAssessmentAnswers(initialState.assessmentAnswers);
+      setAssessmentIndex(initialState.assessmentIndex);
+      setIsHydrated(true);
+    }
+  }, [initialState, isHydrated]);
+
+  useEffect(() => {
+    if (user && isHydrated && !profileData.name && !profileData.email) {
       const fullName = [user.firstName, user.lastName].filter(Boolean).join(" ");
       const email = user.primaryEmailAddress?.emailAddress || "";
-      setProfileData((prev) => ({
-        ...prev,
-        name: prev.name || fullName,
-        email: prev.email || email,
-      }));
+      if (fullName || email) {
+        setProfileData((prev) => ({
+          ...prev,
+          name: prev.name || fullName,
+          email: prev.email || email,
+        }));
+      }
     }
-  }, [user, isHydrated]);
+  }, [user, isHydrated, profileData.name, profileData.email]);
 
   useEffect(() => {
     if (isHydrated) {

@@ -84,6 +84,7 @@ export function SkillsStep({ onBack }: SkillsStepProps) {
 
         <div className="flex justify-center gap-4">
           <button
+            title="Go back to profile"
             onClick={onBack}
             className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-900 text-white transition-colors hover:bg-gray-700"
           >
@@ -102,6 +103,7 @@ export function SkillsStep({ onBack }: SkillsStepProps) {
             </svg>
           </button>
           <button
+            title="Continue to dashboard"
             onClick={handleComplete}
             disabled={!isValid || isSaving}
             className={`flex h-12 w-12 items-center justify-center rounded-full transition-colors ${
