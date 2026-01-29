@@ -1,5 +1,5 @@
 import { openai } from "@ai-sdk/openai";
-import { streamText, tool } from "ai";
+import { streamText } from "ai";
 import { z } from "zod";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
@@ -33,9 +33,9 @@ export async function POST(req: Request) {
     system: systemPrompt,
     messages,
     tools: {
-      getUserProfile: tool({
+      getUserProfile: {
         description: "Get the current user's profile information",
-        parameters: z.object({}),
+        inputSchema: z.object({}),
         execute: async () => {
           const user = await db.user.findUnique({
             where: { clerkId: userId },
@@ -47,12 +47,12 @@ export async function POST(req: Request) {
           });
           return user || { message: "User profile not found" };
         },
-      }),
+      },
 
-      getAssessmentResults: tool({
+      getAssessmentResults: {
         description:
           "Get the user's RIASEC assessment results to understand their interests",
-        parameters: z.object({}),
+        inputSchema: z.object({}),
         execute: async () => {
           const assessment = await db.assessment.findFirst({
             where: {
@@ -83,11 +83,11 @@ export async function POST(req: Request) {
             scores: assessment,
           };
         },
-      }),
+      },
 
-      getSavedCareers: tool({
+      getSavedCareers: {
         description: "Get the list of careers the user has saved",
-        parameters: z.object({}),
+        inputSchema: z.object({}),
         execute: async () => {
           const saved = await db.savedCareer.findMany({
             where: { user: { clerkId: userId } },
@@ -111,12 +111,12 @@ export async function POST(req: Request) {
             savedAt: s.createdAt,
           }));
         },
-      }),
+      },
 
-      searchCareers: tool({
+      searchCareers: {
         description:
           "Search for careers matching specific criteria or RIASEC codes",
-        parameters: z.object({
+        inputSchema: z.object({
           query: z.string().optional().describe("Search term for career title"),
           riasecCode: z
             .string()
@@ -128,11 +128,21 @@ export async function POST(req: Request) {
             .describe("Filter for bright outlook careers"),
           limit: z.number().optional().default(5).describe("Number of results"),
         }),
-        execute: async ({ query, riasecCode, brightOutlook, limit }) => {
+        execute: async ({
+          query,
+          riasecCode,
+          brightOutlook,
+          limit,
+        }: {
+          query?: string;
+          riasecCode?: string;
+          brightOutlook?: boolean;
+          limit?: number;
+        }) => {
           const careers = await db.occupation.findMany({
             where: {
               ...(query && {
-                title: { contains: query, mode: "insensitive" },
+                title: { contains: query, mode: "insensitive" as const },
               }),
               ...(brightOutlook !== undefined && { brightOutlook }),
             },
@@ -150,7 +160,7 @@ export async function POST(req: Request) {
               riasecEnterprising: true,
               riasecConventional: true,
             },
-            take: limit,
+            take: limit ?? 5,
           });
 
           if (riasecCode) {
@@ -165,16 +175,17 @@ export async function POST(req: Request) {
             const field = codeMap[riasecCode.toUpperCase()];
             if (field) {
               return careers.sort(
-                (a, b) => ((b[field] as number) || 0) - ((a[field] as number) || 0)
+                (a, b) =>
+                  ((b[field] as number) || 0) - ((a[field] as number) || 0)
               );
             }
           }
 
           return careers;
         },
-      }),
+      },
     },
   });
 
-  return result.toDataStreamResponse();
+  return result.toUIMessageStreamResponse();
 }

@@ -9,15 +9,18 @@ const nextConfig: NextConfig = {
   },
 };
 
+const isSentryConfigured =
+  process.env.SENTRY_AUTH_TOKEN &&
+  !process.env.SENTRY_AUTH_TOKEN.includes("sntrys_...") &&
+  process.env.SENTRY_ORG &&
+  !process.env.SENTRY_ORG.includes("your-sentry-org");
+
 export default withSentryConfig(nextConfig, {
   org: process.env.SENTRY_ORG,
   project: process.env.SENTRY_PROJECT,
-
   silent: !process.env.CI,
-
   widenClientFileUpload: true,
-
-  automaticVercelMonitors: true,
-
-  disableLogger: true,
+  sourcemaps: {
+    disable: !isSentryConfigured,
+  },
 });
