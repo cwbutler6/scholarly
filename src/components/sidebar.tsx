@@ -1,16 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { UserButton } from "@clerk/nextjs";
+import {
+  DashboardIcon,
+  ExploreIcon,
+  ChatIcon,
+  LearnIcon,
+  SavedIcon,
+} from "@/components/icons/nav-icons";
 
 const navItems = [
-  { href: "/dashboard", icon: "/images/icon-grid.png", label: "Dashboard" },
-  { href: "/explore", icon: "/images/icon-explore.png", label: "Explore" },
-  { href: "/saved", icon: "/images/icon-careers.png", label: "Saved" },
-  { href: "/chat", icon: "/images/icon-chat.png", label: "Chat" },
+  { href: "/dashboard", icon: DashboardIcon, label: "Dashboard" },
+  { href: "/explore", icon: ExploreIcon, label: "Explore" },
+  { href: "/chat", icon: ChatIcon, label: "Chat" },
+  { href: "/learn", icon: LearnIcon, label: "Learn" },
+  { href: "/saved", icon: SavedIcon, label: "Saved" },
 ];
 
 export function Sidebar() {
@@ -18,51 +25,38 @@ export function Sidebar() {
 
   return (
     <aside className="fixed left-0 top-0 z-40 flex h-screen w-16 flex-col items-center border-r bg-white py-6">
-      <Link href="/dashboard" className="mb-8">
-        <Image
-          src="/images/logo-scholarly.svg"
-          alt="Scholarly"
-          width={32}
-          height={32}
-        />
-      </Link>
-
-      <nav className="flex flex-1 flex-col items-center gap-4">
+      <nav className="flex flex-1 flex-col items-center justify-center gap-2">
         {navItems.map((item) => {
-          const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+          const isActive =
+            pathname === item.href || pathname.startsWith(item.href + "/");
+          const Icon = item.icon;
           return (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
-                "flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
+                "flex h-10 w-10 items-center justify-center rounded-xl transition-colors",
                 isActive
-                  ? "bg-[#00B2FF]/10"
-                  : "hover:bg-gray-100"
+                  ? "bg-[#FE9900]/10 text-[#FE9900]"
+                  : "text-[#9C9C9C] hover:bg-gray-100 hover:text-gray-600"
               )}
               title={item.label}
             >
-              <Image
-                src={item.icon}
-                alt={item.label}
-                width={20}
-                height={20}
-                className={cn(isActive && "opacity-100", !isActive && "opacity-60")}
-              />
+              <Icon />
             </Link>
           );
         })}
-      </nav>
 
-      <div className="mt-auto">
-        <UserButton
-          appearance={{
-            elements: {
-              avatarBox: "h-10 w-10",
-            },
-          }}
-        />
-      </div>
+        <div className="mt-4">
+          <UserButton
+            appearance={{
+              elements: {
+                avatarBox: "h-10 w-10 ring-2 ring-[#FE9900] ring-offset-2",
+              },
+            }}
+          />
+        </div>
+      </nav>
     </aside>
   );
 }

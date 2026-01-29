@@ -44,6 +44,7 @@ export function CareerCard({
           </div>
         )}
         <button
+          title="Save career"
           onClick={(e) => {
             e.preventDefault();
             onSave?.();
