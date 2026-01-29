@@ -4,6 +4,7 @@
   "private": true,
   "description": "Career guidance platform for high school students",
   "scripts": {
+    "postinstall": "prisma generate",
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
