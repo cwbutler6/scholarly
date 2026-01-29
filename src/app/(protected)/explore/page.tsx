@@ -25,31 +25,38 @@ export default async function ExplorePage() {
   const careers = await getRecommendedCareers(10);
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5]">
-      <header className="flex items-center justify-between border-b bg-white px-8 py-4">
+    <div className="min-h-screen overflow-x-hidden bg-[#F5F5F5]">
+      <header className="flex items-center justify-between bg-white px-6 py-0">
         <Image
           src="/images/logo-scholarly-full.png"
           alt="Scholarly"
-          width={140}
-          height={32}
-          className="h-8 w-auto"
+          width={115}
+          height={37}
+          className="h-auto w-auto"
         />
         <Link
           href="/chat"
-          className="flex items-center gap-2 rounded-full bg-[#FF9500] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#E68600]"
+          className="flex h-12 items-center gap-2.5 rounded-[24px] bg-gradient-to-r from-[#FFEB7B] to-[#FE9900] py-[5px] pl-[5px] pr-5 font-medium text-gray-900 shadow-sm transition-all hover:shadow-md"
         >
           <Image
-            src="/images/icon-ai-chat.png"
+            src="/images/ai-chat-orb.png"
             alt=""
-            width={16}
-            height={16}
-            className="h-4 w-4"
+            width={38}
+            height={38}
+            className="h-[38px] w-[38px] rounded-full"
           />
-          AI Chat
+          <span>AI Chat</span>
+          <Image
+            src="/images/ai-chat-icon.svg"
+            alt=""
+            width={20}
+            height={20}
+            className="h-5 w-5"
+          />
         </Link>
       </header>
 
-      <div className="p-8">
+      <div className="px-6 py-4">
         <section className="mb-12">
           <h1 className="mb-2 text-3xl font-bold text-gray-900">
             Recommended Careers
@@ -67,7 +74,7 @@ export default async function ExplorePage() {
             Hear from real individuals in the industry
           </p>
 
-          <div className="flex gap-6 overflow-x-auto pb-4">
+          <div className="-mx-6 flex gap-6 overflow-x-auto px-6 pb-4">
             {realStories.map((story) => (
               <Link
                 key={story.id}
