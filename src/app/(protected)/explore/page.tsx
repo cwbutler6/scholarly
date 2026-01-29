@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { getRecommendedCareers } from "@/lib/careers";
-import { CareerList } from "./career-list";
+import { CareerList } from "@/components/career-list";
 
 const realStories = [
   {
@@ -25,7 +25,7 @@ export default async function ExplorePage() {
   const careers = await getRecommendedCareers(10);
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#F5F5F5]">
+    <div className="min-h-screen overflow-x-hidden bg-white">
       <header className="flex items-center justify-between bg-white px-6 py-0">
         <Image
           src="/images/logo-scholarly-full.png"

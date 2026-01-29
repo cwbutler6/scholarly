@@ -31,15 +31,15 @@ export function CareerCard({
   const formatGrowth = (g: string | undefined) => {
     if (!g) return "N/A";
     const num = parseFloat(g.replace(/[^0-9.-]/g, ""));
-    if (!isNaN(num)) return `${num}%`;
+    if (!isNaN(num)) return `↗ ${num}%`;
     if (g.toLowerCase().includes("faster")) return "↗ Fast";
     if (g.toLowerCase().includes("slower")) return "↘ Slow";
     return g;
   };
 
   return (
-    <div className="group relative flex w-[280px] shrink-0 flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-lg">
-      <div className="relative h-44 w-full overflow-hidden bg-gray-100">
+    <div className="group relative flex h-[539px] w-[375px] shrink-0 flex-col overflow-hidden rounded-[15px] border border-black/10 bg-[#F0F0F0]">
+      <div className="relative h-[270px] w-full overflow-hidden">
         {imageUrl ? (
           <Image
             src={imageUrl}
@@ -49,7 +49,7 @@ export function CareerCard({
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-blue-100 to-purple-100">
-            <span className="text-5xl">💼</span>
+            <span className="text-6xl">💼</span>
           </div>
         )}
         <button
@@ -59,41 +59,41 @@ export function CareerCard({
             onSave?.();
           }}
           className={cn(
-            "absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-gray-800/60 text-white transition-colors hover:bg-gray-800/80",
+            "absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-gray-800/60 text-white transition-colors hover:bg-gray-800/80",
             isSaved && "bg-red-500/80 hover:bg-red-500"
           )}
         >
-          <Heart className={cn("h-4 w-4", isSaved && "fill-current")} />
+          <Heart className={cn("h-5 w-5", isSaved && "fill-current")} />
         </button>
       </div>
 
-      <div className="flex flex-1 flex-col p-4">
+      <div className="flex flex-1 flex-col p-5">
         <h3 
-          className="mb-1 truncate text-lg font-semibold text-[#0A0A0A]"
+          className="mb-2 truncate text-xl font-bold text-[#0A0A0A]"
           title={title}
         >
           {title}
         </h3>
-        <p className="mb-4 line-clamp-2 h-10 text-sm text-gray-500">{description}</p>
+        <p className="mb-6 line-clamp-2 text-base text-gray-500">{description}</p>
 
-        <div className="mt-auto grid grid-cols-3 gap-2 text-center">
-          <div className="flex flex-col">
-            <span className="text-base font-semibold text-green-500">{matchPercent ?? 0}%</span>
-            <span className="text-xs text-gray-500">Match</span>
+        <div className="mb-6 grid grid-cols-3 divide-x divide-gray-300 text-center">
+          <div className="flex flex-col gap-1 px-2">
+            <span className="text-lg font-semibold text-green-500">{matchPercent ?? 0}%</span>
+            <span className="text-sm text-gray-500">Match</span>
           </div>
-          <div className="flex flex-col">
-            <span className="text-base font-semibold text-purple-500">{salary ?? "N/A"}</span>
-            <span className="text-xs text-gray-500">Salary</span>
+          <div className="flex flex-col gap-1 px-2">
+            <span className="text-lg font-semibold text-purple-500">{salary ?? "N/A"}</span>
+            <span className="text-sm text-gray-500">Salary</span>
           </div>
-          <div className="flex flex-col">
-            <span className="text-base font-semibold text-green-500">{formatGrowth(growth)}</span>
-            <span className="text-xs text-gray-500">Growth</span>
+          <div className="flex flex-col gap-1 px-2">
+            <span className="text-lg font-semibold text-green-500">{formatGrowth(growth)}</span>
+            <span className="text-sm text-gray-500">Growth</span>
           </div>
         </div>
 
         <Link
           href={`/careers/${id}`}
-          className="mt-4 flex items-center justify-center gap-2 rounded-xl bg-[#0A0A0A] py-3 text-sm font-medium text-white transition-colors hover:bg-gray-800"
+          className="mt-auto flex h-11 items-center justify-center gap-1.5 rounded-[12px] bg-[#010101] text-base font-medium text-white transition-colors hover:bg-gray-800"
         >
           View Career
           <span>→</span>

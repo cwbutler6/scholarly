@@ -10,7 +10,7 @@ interface CareerListProps {
 
 export function CareerList({ initialCareers }: CareerListProps) {
   const [careers, setCareers] = useState(initialCareers);
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
 
   const handleSave = (careerId: string) => {
     startTransition(async () => {
@@ -24,7 +24,7 @@ export function CareerList({ initialCareers }: CareerListProps) {
   };
 
   return (
-    <div className="-mx-6 flex gap-6 overflow-x-auto px-6 pb-4">
+    <div className="-mx-6 flex gap-4 overflow-x-auto px-6 pb-4">
       {careers.length === 0 ? (
         <div className="flex h-48 w-full items-center justify-center text-gray-500">
           <p>No careers found. Check back after O*NET data is imported.</p>
