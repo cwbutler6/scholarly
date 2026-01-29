@@ -17,6 +17,7 @@
     "db:seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^3.0.23",
     "@clerk/nextjs": "^6.37.0",
     "@radix-ui/react-avatar": "^1.1.11",
     "@radix-ui/react-dialog": "^1.1.15",
@@ -28,6 +29,7 @@
     "@radix-ui/react-tabs": "^1.1.13",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@sentry/nextjs": "^10.38.0",
+    "ai": "^6.0.62",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.563.0",
@@ -36,7 +38,8 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "tailwind-merge": "^3.4.0",
-    "ws": "^8.19.0"
+    "ws": "^8.19.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@neondatabase/serverless": "^1.0.2",
