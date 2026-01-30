@@ -7,6 +7,8 @@ import type { Prisma } from "@/generated/prisma";
 interface OnetElement {
   id: string;
   name: string;
+  importance?: number;
+  level?: number;
   score?: {
     value: number;
     scale?: { id: string; name: string };
@@ -59,6 +61,7 @@ interface OnetOccupation {
     bright_outlook?: boolean;
     green?: boolean;
     apprenticeship?: boolean;
+    stem?: boolean;
   };
 }
 
@@ -71,11 +74,31 @@ const RIASEC_MAP: Record<string, string> = {
   "1.B.1.f": "conventional",
 };
 
+interface OnetJobZone {
+  code: number;
+  title: string;
+  education: string;
+  related_experience: string;
+  job_training: string;
+}
+
+interface OnetInterestsResponse {
+  element?: Array<{
+    id: string;
+    name: string;
+    occupational_interest?: number;
+    importance?: number;
+    score?: { value: number };
+  }>;
+}
+
 export function transformOccupation(
   occupation: OnetOccupation,
-  report?: OnetOccupationReport
+  report?: OnetOccupationReport,
+  jobZone?: OnetJobZone,
+  interests?: OnetInterestsResponse
 ): Prisma.OccupationCreateInput {
-  const riasec = extractRiasecScores(report?.interests);
+  const riasec = extractRiasecScores(report?.interests, interests);
   const majorGroup = extractMajorGroup(occupation.code);
 
   return {
@@ -87,6 +110,8 @@ export function transformOccupation(
     category: majorGroup,
     brightOutlook: occupation.tags?.bright_outlook ?? false,
     greenOccupation: occupation.tags?.green ?? false,
+    stemOccupation: occupation.tags?.stem ?? false,
+    jobZone: jobZone?.code,
     riasecRealistic: riasec.realistic,
     riasecInvestigative: riasec.investigative,
     riasecArtistic: riasec.artistic,
@@ -96,14 +121,19 @@ export function transformOccupation(
     medianWage: report?.job_outlook?.salary?.annual_median,
     wagePercentile10: report?.job_outlook?.salary?.annual_10th_percentile,
     wagePercentile90: report?.job_outlook?.salary?.annual_90th_percentile,
-    typicalEducation: report?.job_outlook?.education?.education_usually_needed?.category,
+    typicalEducation:
+      jobZone?.education ||
+      report?.job_outlook?.education?.education_usually_needed?.category,
     jobGrowth: report?.job_outlook?.outlook?.category,
     onetVersion: "30.1",
     lastSynced: new Date(),
   };
 }
 
-function extractRiasecScores(interests?: OnetInterests): {
+function extractRiasecScores(
+  reportInterests?: OnetInterests,
+  onlineInterests?: OnetInterestsResponse
+): {
   realistic?: number;
   investigative?: number;
   artistic?: number;
@@ -111,13 +141,19 @@ function extractRiasecScores(interests?: OnetInterests): {
   enterprising?: number;
   conventional?: number;
 } {
-  if (!interests?.element) return {};
+  const interests = onlineInterests?.element || reportInterests?.element;
+  if (!interests) return {};
 
   const scores: Record<string, number> = {};
-  for (const element of interests.element) {
+  for (const element of interests) {
     const riasecKey = RIASEC_MAP[element.id];
     if (riasecKey) {
-      scores[riasecKey] = element.score.value;
+      const score =
+        (element as { occupational_interest?: number }).occupational_interest ??
+        (element as { importance?: number }).importance ??
+        element.score?.value ??
+        0;
+      scores[riasecKey] = score;
     }
   }
 
@@ -159,12 +195,14 @@ export function transformSkill(
   occupationId: string,
   element: OnetElement
 ): Prisma.OccupationSkillCreateManyInput {
+  const importance = element.importance ?? element.score?.value;
+  const level = element.level ?? element.score?.value;
   return {
     occupationId,
     elementId: element.id,
     name: element.name,
-    importance: element.score?.value,
-    level: element.score?.value,
+    importance,
+    level,
     type: "onet_skill",
   };
 }
@@ -173,12 +211,14 @@ export function transformKnowledge(
   occupationId: string,
   element: OnetElement
 ): Prisma.OccupationKnowledgeCreateManyInput {
+  const importance = element.importance ?? element.score?.value;
+  const level = element.level ?? element.score?.value;
   return {
     occupationId,
     elementId: element.id,
     name: element.name,
-    importance: element.score?.value,
-    level: element.score?.value,
+    importance,
+    level,
   };
 }
 
@@ -186,12 +226,14 @@ export function transformAbility(
   occupationId: string,
   element: OnetElement
 ): Prisma.OccupationAbilityCreateManyInput {
+  const importance = element.importance ?? element.score?.value;
+  const level = element.level ?? element.score?.value;
   return {
     occupationId,
     elementId: element.id,
     name: element.name,
-    importance: element.score?.value,
-    level: element.score?.value,
+    importance,
+    level,
   };
 }
 
@@ -199,12 +241,14 @@ export function transformWorkActivity(
   occupationId: string,
   element: OnetElement
 ): Prisma.OccupationWorkActivityCreateManyInput {
+  const importance = element.importance ?? element.score?.value;
+  const level = element.level ?? element.score?.value;
   return {
     occupationId,
     elementId: element.id,
     name: element.name,
-    importance: element.score?.value,
-    level: element.score?.value,
+    importance,
+    level,
   };
 }
 
@@ -231,5 +275,41 @@ export function transformRelation(
     sourceId,
     targetId,
     similarity,
+  };
+}
+
+export function transformTask(
+  occupationId: string,
+  task: { id: string; title: string; importance?: number }
+): Prisma.OccupationTaskCreateManyInput {
+  return {
+    occupationId,
+    statement: task.title,
+    importance: task.importance,
+  };
+}
+
+export function transformWorkContext(
+  occupationId: string,
+  element: OnetElement & { category?: string }
+): Prisma.OccupationWorkContextCreateManyInput {
+  return {
+    occupationId,
+    elementId: element.id,
+    name: element.name,
+    category: element.category,
+    score: element.importance ?? element.score?.value,
+  };
+}
+
+export function transformWorkStyle(
+  occupationId: string,
+  element: OnetElement
+): Prisma.OccupationWorkStyleCreateManyInput {
+  return {
+    occupationId,
+    elementId: element.id,
+    name: element.name,
+    importance: element.importance ?? element.score?.value,
   };
 }

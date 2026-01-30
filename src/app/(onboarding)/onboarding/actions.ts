@@ -3,6 +3,10 @@
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import {
+  getOnboardingQuestions,
+  saveAnswers as saveAssessmentAnswers,
+} from "@/lib/assessment";
 
 interface RiasecScores {
   R: number;
@@ -11,6 +15,81 @@ interface RiasecScores {
   S: number;
   E: number;
   C: number;
+}
+
+export async function getAssessmentQuestions() {
+  return getOnboardingQuestions();
+}
+
+export async function getAssessmentState() {
+  const { userId } = await auth();
+  if (!userId) {
+    return { answers: {}, currentIndex: 0 };
+  }
+
+  const user = await db.user.findUnique({
+    where: { clerkId: userId },
+  });
+
+  if (!user) {
+    return { answers: {}, currentIndex: 0 };
+  }
+
+  const assessment = await db.assessment.findFirst({
+    where: { userId: user.id },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const answers = (assessment?.answersJson as Record<number, number>) || {};
+  const answeredCount = Object.keys(answers).length;
+
+  return {
+    answers,
+    currentIndex: answeredCount,
+  };
+}
+
+export async function saveAssessmentAnswer(
+  questionIndex: number,
+  value: number
+) {
+  const { userId } = await auth();
+  if (!userId) {
+    throw new Error("Unauthorized");
+  }
+
+  const user = await db.user.findUnique({
+    where: { clerkId: userId },
+  });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  const result = await saveAssessmentAnswers(user.id, { [questionIndex]: value });
+  return result;
+}
+
+export async function saveAssessmentWithAnswers(
+  answers: Record<number, number>
+) {
+  const { userId } = await auth();
+
+  if (!userId) {
+    throw new Error("Unauthorized");
+  }
+
+  const user = await db.user.findUnique({
+    where: { clerkId: userId },
+  });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  const result = await saveAssessmentAnswers(user.id, answers);
+  revalidatePath("/dashboard");
+  return result;
 }
 
 export async function saveAssessment(scores: RiasecScores) {
@@ -39,7 +118,8 @@ export async function saveAssessment(scores: RiasecScores) {
       social: scores.S,
       enterprising: scores.E,
       conventional: scores.C,
-      completedAt: new Date(),
+      questionsAnswered: 6,
+      isComplete: false,
     },
     create: {
       id: `${user.id}-riasec`,
@@ -51,7 +131,8 @@ export async function saveAssessment(scores: RiasecScores) {
       social: scores.S,
       enterprising: scores.E,
       conventional: scores.C,
-      completedAt: new Date(),
+      questionsAnswered: 6,
+      isComplete: false,
     },
   });
 

@@ -5,6 +5,7 @@ import { getRecommendedCareers } from "@/lib/careers";
 import { getTodaysQuestion } from "@/lib/questions";
 import { getTodaysCrossword } from "@/lib/crossword";
 import { recordDailyActivity } from "@/lib/streaks";
+import { getAssessmentProgress } from "@/lib/assessment";
 import { CareerList } from "@/components/career-list";
 import {
   DashboardStreakCard,
@@ -20,12 +21,14 @@ import {
 } from "./actions";
 
 export default async function DashboardPage() {
-  const [user, careers, question, crossword, streak] = await Promise.all([
-    getOrCreateUser(),
+  const user = await getOrCreateUser();
+  
+  const [careers, question, crossword, streak, assessmentProgress] = await Promise.all([
     getRecommendedCareers(10),
     getTodaysQuestion(),
     getTodaysCrossword(),
     recordDailyActivity(),
+    user ? getAssessmentProgress(user.id) : null,
   ]);
 
   const firstName = user?.firstName || "there";
@@ -42,27 +45,32 @@ export default async function DashboardPage() {
           </p>
         </section>
 
-        <section className="mb-6 rounded-2xl bg-[#315A3F] p-4 text-white md:p-6">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div className="flex-1">
-              <h2 className="mb-2 text-xl font-bold md:text-2xl">Complete Your Profile</h2>
-              <p className="mb-4 text-base text-white/80 md:text-[22px]">
-                Complete your profile to get personalized career recommendations.
-              </p>
-              <div className="mb-1 h-3 w-full max-w-2xl overflow-hidden rounded-full bg-[#1E3D2A]">
-                <div className="h-full w-[5%] rounded-full bg-[#00D26A]" />
+        {!assessmentProgress?.isComplete && (
+          <section className="mb-6 rounded-2xl bg-[#315A3F] p-4 text-white md:p-6">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div className="flex-1">
+                <h2 className="mb-2 text-xl font-bold md:text-2xl">Complete Your Profile</h2>
+                <p className="mb-4 text-base text-white/80 md:text-[22px]">
+                  Complete your profile to get personalized career recommendations.
+                </p>
+                <div className="mb-1 h-3 w-full max-w-2xl overflow-hidden rounded-full bg-[#1E3D2A]">
+                  <div 
+                    className="h-full rounded-full bg-[#00D26A] transition-all duration-300" 
+                    style={{ width: `${Math.max(assessmentProgress?.percentComplete || 0, 5)}%` }}
+                  />
+                </div>
+                <span className="text-sm text-white/60">{assessmentProgress?.percentComplete || 0}%</span>
               </div>
-              <span className="text-sm text-white/60">0%</span>
+              <Link
+                href="/assessment"
+                className="flex h-11 w-full items-center justify-center gap-2 rounded-[10px] bg-linear-to-r from-[#AD46FF] to-[#F6339A] px-6 text-base font-semibold transition-opacity hover:opacity-90 md:ml-6 md:w-auto"
+              >
+                {assessmentProgress?.questionsAnswered ? "Continue Assessment" : "Complete Assessment"}
+                <ArrowRight className="h-5 w-5" />
+              </Link>
             </div>
-            <Link
-              href="/onboarding"
-              className="flex h-11 w-full items-center justify-center gap-2 rounded-[10px] bg-linear-to-r from-[#AD46FF] to-[#F6339A] px-6 text-base font-semibold transition-opacity hover:opacity-90 md:ml-6 md:w-auto"
-            >
-              Start Setup
-              <ArrowRight className="h-5 w-5" />
-            </Link>
-          </div>
-        </section>
+          </section>
+        )}
 
         <section className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <DashboardStreakCard streak={streak} />

@@ -2,43 +2,24 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { saveAssessment } from "../actions";
+import {
+  getAssessmentQuestions,
+  getAssessmentState,
+  saveAssessmentAnswer,
+} from "../actions";
 import { useAnalytics } from "@/lib/posthog";
 
 interface AssessmentStepProps {
-  initialAnswers?: Record<number, number>;
-  initialIndex?: number;
-  onProgress?: (answers: Record<number, number>, index: number) => void;
   onComplete: () => void;
   onBack: () => void;
 }
 
-const riasecQuestions = [
-  { id: 1, text: "Build kitchen cabinets", category: "R" },
-  { id: 2, text: "Stamp, sort, and distribute mail for an organization", category: "C" },
-  { id: 3, text: "Fix a broken faucet", category: "R" },
-  { id: 4, text: "Assemble electronic parts", category: "R" },
-  { id: 5, text: "Study the structure of the human body", category: "I" },
-  { id: 6, text: "Develop a new medicine", category: "I" },
-  { id: 7, text: "Conduct chemical experiments", category: "I" },
-  { id: 8, text: "Study animal behavior", category: "I" },
-  { id: 9, text: "Compose or arrange music", category: "A" },
-  { id: 10, text: "Draw pictures", category: "A" },
-  { id: 11, text: "Create special effects for movies", category: "A" },
-  { id: 12, text: "Paint sets for plays", category: "A" },
-  { id: 13, text: "Help people with personal or emotional problems", category: "S" },
-  { id: 14, text: "Teach children how to read", category: "S" },
-  { id: 15, text: "Work with mentally disabled children", category: "S" },
-  { id: 16, text: "Teach sign language to people with hearing disabilities", category: "S" },
-  { id: 17, text: "Sell merchandise at a department store", category: "E" },
-  { id: 18, text: "Manage a department within a large company", category: "E" },
-  { id: 19, text: "Start your own business", category: "E" },
-  { id: 20, text: "Negotiate business contracts", category: "E" },
-  { id: 21, text: "Keep shipping and receiving records", category: "C" },
-  { id: 22, text: "Proofread records or forms", category: "C" },
-  { id: 23, text: "Calculate the wages of employees", category: "C" },
-  { id: 24, text: "Inventory supplies using a hand-held computer", category: "C" },
-];
+interface Question {
+  id: string;
+  index: number;
+  text: string;
+  area: string;
+}
 
 const ratings = [
   { value: 1, label: "Strongly\nDislike", image: "/images/emoji-strongly-dislike.svg" },
@@ -48,54 +29,90 @@ const ratings = [
   { value: 5, label: "Strongly\nLike", image: "/images/emoji-strongly-like.svg" },
 ];
 
-export function AssessmentStep({
-  initialAnswers = {},
-  initialIndex = 0,
-  onProgress,
-  onComplete,
-  onBack,
-}: AssessmentStepProps) {
-  const [currentIndex, setCurrentIndex] = useState(initialIndex);
-  const [answers, setAnswers] = useState<Record<number, number>>(initialAnswers);
+export function AssessmentStep({ onComplete, onBack }: AssessmentStepProps) {
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [answers, setAnswers] = useState<Record<number, number>>({});
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const { track } = useAnalytics();
 
-  const currentQuestion = riasecQuestions[currentIndex];
-  const progress = ((currentIndex + 1) / riasecQuestions.length) * 100;
-
   useEffect(() => {
-    if (currentIndex === 0 && Object.keys(initialAnswers).length === 0) {
-      track("assessment_started", { type: "riasec" });
+    async function loadState() {
+      try {
+        const [questionsData, stateData] = await Promise.all([
+          getAssessmentQuestions(),
+          getAssessmentState(),
+        ]);
+        setQuestions(questionsData);
+        setAnswers(stateData.answers);
+        const startIndex = Math.min(stateData.currentIndex, questionsData.length - 1);
+        setCurrentIndex(Math.max(0, startIndex));
+      } catch {
+        // Failed to load
+      } finally {
+        setIsLoading(false);
+      }
     }
+    loadState();
   }, []);
 
-  const handleAnswer = async (value: number) => {
-    const newAnswers = { ...answers, [currentQuestion.id]: value };
-    setAnswers(newAnswers);
+  useEffect(() => {
+    if (currentIndex === 0 && Object.keys(answers).length === 0 && questions.length > 0) {
+      track("assessment_started", { type: "riasec" });
+    }
+  }, [questions.length, currentIndex, answers, track]);
 
-    if (currentIndex < riasecQuestions.length - 1) {
-      const nextIndex = currentIndex + 1;
-      onProgress?.(newAnswers, nextIndex);
-      setTimeout(() => setCurrentIndex(nextIndex), 300);
-    } else {
-      setIsSaving(true);
-      const scores = calculateScores(newAnswers);
-      await saveAssessment(scores);
-      track("assessment_completed", { type: "riasec", scores });
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center p-4">
+        <p className="text-gray-500">Loading questions...</p>
+      </div>
+    );
+  }
+
+  if (questions.length === 0) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center p-4">
+        <p className="text-gray-500">No questions available. Please try again later.</p>
+        <button
+          onClick={onBack}
+          className="mt-4 rounded-lg bg-gray-900 px-4 py-2 text-white"
+        >
+          Go Back
+        </button>
+      </div>
+    );
+  }
+
+  const currentQuestion = questions[currentIndex];
+  const progress = ((currentIndex + 1) / questions.length) * 100;
+
+  const handleAnswer = async (value: number) => {
+    const newAnswers = { ...answers, [currentQuestion.index]: value };
+    setAnswers(newAnswers);
+    setIsSaving(true);
+
+    try {
+      await saveAssessmentAnswer(currentQuestion.index, value);
+
+      if (currentIndex < questions.length - 1) {
+        setTimeout(() => setCurrentIndex(currentIndex + 1), 300);
+      } else {
+        track("assessment_partial_complete", { type: "riasec", questionsAnswered: 6 });
+        onComplete();
+      }
+    } finally {
       setIsSaving(false);
-      onComplete();
     }
   };
 
-  const calculateScores = (ans: Record<number, number>) => {
-    const scores = { R: 0, I: 0, A: 0, S: 0, E: 0, C: 0 };
-    riasecQuestions.forEach((q) => {
-      const answer = ans[q.id];
-      if (answer) {
-        scores[q.category as keyof typeof scores] += answer;
-      }
-    });
-    return scores;
+  const handleBack = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+    } else {
+      onBack();
+    }
   };
 
   return (
@@ -124,7 +141,7 @@ export function AssessmentStep({
               onClick={() => handleAnswer(rating.value)}
               disabled={isSaving}
               className={`flex flex-col items-center transition-transform hover:scale-110 ${
-                answers[currentQuestion.id] === rating.value ? "scale-110" : ""
+                answers[currentQuestion.index] === rating.value ? "scale-110" : ""
               }`}
             >
               <Image
@@ -141,35 +158,21 @@ export function AssessmentStep({
           ))}
         </div>
 
-        <div className="mt-10 flex justify-center gap-4 md:mt-16">
+        <div className="mt-10 flex justify-center md:mt-16">
           <button
-            onClick={onBack}
-            aria-label="Go back to profile"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-900 text-white transition-colors hover:bg-gray-700 md:h-12 md:w-12"
+            onClick={handleBack}
+            disabled={isSaving}
+            aria-label={currentIndex > 0 ? "Previous question" : "Go back to profile"}
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-900 text-white transition-colors hover:bg-gray-700 disabled:opacity-50 md:h-12 md:w-12"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          {currentIndex > 0 && (
-            <button
-              onClick={() => {
-                const prevIndex = currentIndex - 1;
-                setCurrentIndex(prevIndex);
-                onProgress?.(answers, prevIndex);
-              }}
-              aria-label="Previous question"
-              className="flex h-11 w-11 items-center justify-center rounded-full border border-gray-300 text-gray-600 transition-colors hover:bg-gray-100 md:h-12 md:w-12"
-            >
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-          )}
         </div>
 
         <p className="mt-3 text-sm text-gray-400 md:mt-4">
-          {currentIndex + 1} of {riasecQuestions.length}
+          {currentIndex + 1} of {questions.length}
         </p>
       </div>
     </div>

@@ -47,22 +47,37 @@ model User {
 
 /// RIASEC assessment results
 model Assessment {
-  id          String   @id @default(cuid())
-  userId      String   @map("user_id")
-  type        String   @default("riasec")
-  realistic   Int      @default(0)
-  investigative Int    @default(0)
-  artistic    Int      @default(0)
-  social      Int      @default(0)
-  enterprising Int     @default(0)
-  conventional Int     @default(0)
-  completedAt DateTime? @map("completed_at")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id               String    @id @default(cuid())
+  userId           String    @map("user_id")
+  type             String    @default("riasec")
+  realistic        Int       @default(0)
+  investigative    Int       @default(0)
+  artistic         Int       @default(0)
+  social           Int       @default(0)
+  enterprising     Int       @default(0)
+  conventional     Int       @default(0)
+  questionsAnswered Int      @default(0) @map("questions_answered")
+  answersJson      Json?     @map("answers_json")
+  isComplete       Boolean   @default(false) @map("is_complete")
+  completedAt      DateTime? @map("completed_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("assessments")
+}
+
+/// O*NET RIASEC Interest Profiler questions (30-question Mini-IP)
+model RiasecQuestion {
+  id        String   @id @default(cuid())
+  index     Int      @unique
+  text      String
+  area      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("riasec_questions")
 }
 
 /// Careers saved by users for later reference
@@ -121,14 +136,17 @@ model Occupation {
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
-  savedBy      SavedCareer[]
-  skills       OccupationSkill[]
-  knowledge    OccupationKnowledge[]
-  abilities    OccupationAbility[]
-  technologies OccupationTechnology[]
+  savedBy        SavedCareer[]
+  skills         OccupationSkill[]
+  knowledge      OccupationKnowledge[]
+  abilities      OccupationAbility[]
+  technologies   OccupationTechnology[]
   workActivities OccupationWorkActivity[]
-  relatedTo    OccupationRelation[] @relation("source")
-  relatedFrom  OccupationRelation[] @relation("target")
+  tasks          OccupationTask[]
+  workContext    OccupationWorkContext[]
+  workStyles     OccupationWorkStyle[]
+  relatedTo      OccupationRelation[] @relation("source")
+  relatedFrom    OccupationRelation[] @relation("target")
 
   @@index([jobZone])
   @@index([brightOutlook])
@@ -228,6 +246,48 @@ model OccupationRelation {
 
   @@unique([sourceId, targetId])
   @@map("occupation_relations")
+}
+
+/// Tasks (job duties) performed in an occupation
+model OccupationTask {
+  id           String @id @default(cuid())
+  occupationId String @map("occupation_id")
+  statement    String
+  importance   Float?
+
+  occupation Occupation @relation(fields: [occupationId], references: [id], onDelete: Cascade)
+
+  @@unique([occupationId, statement])
+  @@map("occupation_tasks")
+}
+
+/// Work context - physical and social environment where work is performed
+model OccupationWorkContext {
+  id           String @id @default(cuid())
+  occupationId String @map("occupation_id")
+  elementId    String @map("element_id")
+  name         String
+  category     String?
+  score        Float?
+
+  occupation Occupation @relation(fields: [occupationId], references: [id], onDelete: Cascade)
+
+  @@unique([occupationId, elementId])
+  @@map("occupation_work_context")
+}
+
+/// Work styles - personal characteristics important for job success
+model OccupationWorkStyle {
+  id           String @id @default(cuid())
+  occupationId String @map("occupation_id")
+  elementId    String @map("element_id")
+  name         String
+  importance   Float?
+
+  occupation Occupation @relation(fields: [occupationId], references: [id], onDelete: Cascade)
+
+  @@unique([occupationId, elementId])
+  @@map("occupation_work_styles")
 }
 
 /// AI chat sessions for career coaching

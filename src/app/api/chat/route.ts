@@ -149,6 +149,7 @@ export async function POST(req: Request) {
         }) => {
           const careers = await db.occupation.findMany({
             where: {
+              stemOccupation: true,
               ...(query && {
                 title: { contains: query, mode: "insensitive" as const },
               }),
@@ -200,8 +201,8 @@ export async function POST(req: Request) {
           careerId: z.string().describe("The ID of the career to get details for"),
         }),
         execute: async ({ careerId }: { careerId: string }) => {
-          const occupation = await db.occupation.findUnique({
-            where: { id: careerId },
+          const occupation = await db.occupation.findFirst({
+            where: { id: careerId, stemOccupation: true },
             include: {
               skills: { orderBy: { importance: "desc" }, take: 10 },
               knowledge: { orderBy: { importance: "desc" }, take: 10 },
@@ -210,7 +211,7 @@ export async function POST(req: Request) {
           });
 
           if (!occupation) {
-            return { error: "Career not found" };
+            return { error: "Career not found or not a STEM career" };
           }
 
           return {
@@ -255,8 +256,8 @@ export async function POST(req: Request) {
             return { error: "User not found" };
           }
 
-          const occupation = await db.occupation.findUnique({
-            where: { id: careerId },
+          const occupation = await db.occupation.findFirst({
+            where: { id: careerId, stemOccupation: true },
             select: {
               id: true,
               title: true,
@@ -271,7 +272,7 @@ export async function POST(req: Request) {
           });
 
           if (!occupation) {
-            return { error: "Career not found" };
+            return { error: "Career not found or not a STEM career" };
           }
 
           const [assessment, userSkills, occupationSkills, videoWatches, engagement] =

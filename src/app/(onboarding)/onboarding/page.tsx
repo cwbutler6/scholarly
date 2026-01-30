@@ -1,7 +1,7 @@
 "use client";
 /* eslint-disable react-hooks/set-state-in-effect */
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useUser } from "@clerk/nextjs";
 import { WelcomeStep } from "./steps/welcome";
 import { ProfileMethodStep } from "./steps/profile-method";
@@ -26,8 +26,6 @@ interface OnboardingState {
     location: string;
     birthDate: string;
   };
-  assessmentAnswers: Record<number, number>;
-  assessmentIndex: number;
 }
 
 function loadState(): Partial<OnboardingState> | null {
@@ -65,8 +63,6 @@ function getInitialState() {
       location: saved?.profileData?.location || "",
       birthDate: saved?.profileData?.birthDate || "",
     },
-    assessmentAnswers: saved?.assessmentAnswers || {},
-    assessmentIndex: saved?.assessmentIndex || 0,
   };
 }
 
@@ -86,8 +82,6 @@ export default function OnboardingPage() {
     location: "",
     birthDate: "",
   });
-  const [assessmentAnswers, setAssessmentAnswers] = useState<Record<number, number>>({});
-  const [assessmentIndex, setAssessmentIndex] = useState(0);
   const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
@@ -98,8 +92,6 @@ export default function OnboardingPage() {
     if (initialState && !isHydrated) {
       setStep(initialState.step);
       setProfileData(initialState.profileData);
-      setAssessmentAnswers(initialState.assessmentAnswers);
-      setAssessmentIndex(initialState.assessmentIndex);
       setIsHydrated(true);
     }
   }, [initialState, isHydrated]);
@@ -134,12 +126,6 @@ export default function OnboardingPage() {
     setProfileData((prev) => ({ ...prev, ...data }));
   };
 
-  const updateAssessment = useCallback((answers: Record<number, number>, index: number) => {
-    setAssessmentAnswers(answers);
-    setAssessmentIndex(index);
-    saveState({ assessmentAnswers: answers, assessmentIndex: index });
-  }, []);
-
   if (!isHydrated) {
     return <main className="min-h-screen bg-white" />;
   }
@@ -169,14 +155,11 @@ export default function OnboardingPage() {
       )}
       {step === "assessment" && (
         <AssessmentStep
-          initialAnswers={assessmentAnswers}
-          initialIndex={assessmentIndex}
-          onProgress={updateAssessment}
           onComplete={() => {
             clearOnboardingState();
             setStep("skills");
           }}
-          onBack={() => setStep("build-profile")}
+          onBack={() => setStep("profile-method")}
         />
       )}
       {step === "skills" && (

@@ -15,6 +15,9 @@ import {
   transformWorkActivity,
   transformTechnology,
   transformRelation,
+  transformTask,
+  transformWorkContext,
+  transformWorkStyle,
 } from "./transform";
 
 interface IngestResult {
@@ -49,9 +52,21 @@ export async function ingestOnetData(
       : occupations;
     log(`Found ${occupations.length} occupations, processing ${toProcess.length}`);
 
+    log("Fetching STEM occupations list...");
+    const stemData = await client.getStemOccupations().catch(() => ({ occupation: [] }));
+    const stemCodes = new Set(stemData.occupation?.map((o) => o.code) || []);
+    log(`Found ${stemCodes.size} STEM occupations`);
+
+    log("Fetching RIASEC Interest Profiler questions...");
+    await ingestRiasecQuestions(client, log).catch((err) => {
+      errors.push(`Error ingesting RIASEC questions: ${err}`);
+      log(`Error ingesting RIASEC questions: ${err}`);
+    });
+
     for (const occupation of toProcess) {
       try {
-        await ingestSingleOccupation(client, occupation.code, log);
+        const isStem = stemCodes.has(occupation.code);
+        await ingestSingleOccupation(client, occupation.code, isStem);
         occupationsProcessed++;
 
         if (occupationsProcessed % 50 === 0) {
@@ -85,29 +100,49 @@ export async function ingestOnetData(
 async function ingestSingleOccupation(
   client: OnetClient,
   code: string,
-  log: (msg: string) => void
+  isStem: boolean
 ): Promise<void> {
-  const [details, report, skills, knowledge, abilities, workActivities, tech] =
-    await Promise.all([
-      client.getOccupationDetails(code).catch(() => null),
-      client.getOccupationReport(code).catch(() => null),
-      client.getOccupationSkills(code).catch(() => ({ element: [] })),
-      client.getOccupationKnowledge(code).catch(() => ({ element: [] })),
-      client.getOccupationAbilities(code).catch(() => ({ element: [] })),
-      client.getOccupationWorkActivities(code).catch(() => ({ element: [] })),
-      client.getOccupationTechnology(code).catch(() => ({ category: [] })),
-    ]);
+  const [
+    details,
+    mnmReport,
+    skills,
+    knowledge,
+    abilities,
+    workActivities,
+    tech,
+    jobZone,
+    interests,
+    tasks,
+    workContext,
+    workStyles,
+  ] = await Promise.all([
+    client.getOccupationDetails(code).catch(() => null),
+    client.getMnmCareerReport(code).catch(() => null),
+    client.getOccupationSkills(code).catch(() => ({ element: [] })),
+    client.getOccupationKnowledge(code).catch(() => ({ element: [] })),
+    client.getOccupationAbilities(code).catch(() => ({ element: [] })),
+    client.getOccupationWorkActivities(code).catch(() => ({ element: [] })),
+    client.getOccupationTechnology(code).catch(() => ({ category: [] })),
+    client.getOccupationJobZone(code).catch(() => null),
+    client.getOccupationInterests(code).catch(() => ({ element: [] })),
+    client.getOccupationTasks(code).catch(() => ({ task: [] })),
+    client.getOccupationWorkContext(code).catch(() => ({ element: [] })),
+    client.getOccupationWorkStyles(code).catch(() => ({ element: [] })),
+  ]);
 
   const occupationData = transformOccupation(
     {
       code,
-      title: details?.title || report?.title || code,
+      title: details?.title || mnmReport?.title || code,
       description: details?.description,
       tags: {
-        bright_outlook: report?.job_outlook?.bright_outlook !== undefined,
+        bright_outlook: details?.tags?.bright_outlook ?? false,
+        stem: isStem,
       },
     },
-    report || undefined
+    mnmReport || undefined,
+    jobZone || undefined,
+    interests || undefined
   );
 
   await db.occupation.upsert({
@@ -152,23 +187,17 @@ async function ingestSingleOccupation(
   if (tech.category?.length) {
     const techData: ReturnType<typeof transformTechnology>[] = [];
     for (const cat of tech.category) {
-      if (cat.title) {
-        for (const t of cat.title) {
-          const techName =
-            typeof t === "string"
-              ? t
-              : typeof t === "object" && t.title?.name
-                ? t.title.name
-                : null;
+      const categoryName = typeof cat.title === "string" ? cat.title : undefined;
+      if (cat.example?.length) {
+        for (const example of cat.example) {
+          const techName = typeof example === "string" ? example : example?.title;
           if (techName) {
             techData.push(
               transformTechnology(
                 code,
                 techName,
-                typeof t === "object" && t.category?.name
-                  ? t.category.name
-                  : undefined,
-                typeof t === "object" && t.hot_technology === true
+                categoryName,
+                typeof example === "object" && example.hot_technology === true
               )
             );
           }
@@ -181,6 +210,30 @@ async function ingestSingleOccupation(
         skipDuplicates: true,
       });
     }
+  }
+
+  await db.occupationTask.deleteMany({ where: { occupationId: code } });
+  if (tasks.task?.length) {
+    await db.occupationTask.createMany({
+      data: tasks.task.map((t) => transformTask(code, t)),
+      skipDuplicates: true,
+    });
+  }
+
+  await db.occupationWorkContext.deleteMany({ where: { occupationId: code } });
+  if (workContext.element?.length) {
+    await db.occupationWorkContext.createMany({
+      data: workContext.element.map((el) => transformWorkContext(code, el)),
+      skipDuplicates: true,
+    });
+  }
+
+  await db.occupationWorkStyle.deleteMany({ where: { occupationId: code } });
+  if (workStyles.element?.length) {
+    await db.occupationWorkStyle.createMany({
+      data: workStyles.element.map((el) => transformWorkStyle(code, el)),
+      skipDuplicates: true,
+    });
   }
 }
 
@@ -229,6 +282,37 @@ async function ingestAllRelations(
       log(`Error processing relations for ${occupation.code}: ${error}`);
     }
   }
+}
+
+async function ingestRiasecQuestions(
+  client: OnetClient,
+  log: (msg: string) => void
+): Promise<void> {
+  const questions = await client.getInterestProfilerQuestions30();
+
+  if (!questions.question?.length) {
+    log("No RIASEC questions found");
+    return;
+  }
+
+  log(`Found ${questions.question.length} RIASEC questions, upserting...`);
+
+  for (const q of questions.question) {
+    await db.riasecQuestion.upsert({
+      where: { index: q.index },
+      update: {
+        text: q.text,
+        area: q.area,
+      },
+      create: {
+        index: q.index,
+        text: q.text,
+        area: q.area,
+      },
+    });
+  }
+
+  log(`Upserted ${questions.question.length} RIASEC questions`);
 }
 
 export async function ingestHotTechnologies(): Promise<string[]> {

@@ -4,6 +4,8 @@ import { db } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/user";
 import { getCareerImageUrl } from "@/lib/unsplash";
 
+const STEM_FILTER = { stemOccupation: true } as const;
+
 export interface CareerWithMatch {
   id: string;
   title: string;
@@ -478,6 +480,7 @@ export async function getRecommendedCareers(limit = 10): Promise<CareerWithMatch
   const [allOccupations, savedCareers, assessment, userSkills, userInterests] =
     await Promise.all([
       db.occupation.findMany({
+        where: STEM_FILTER,
         select: {
           id: true,
           title: true,
@@ -694,6 +697,7 @@ export async function searchCareers(query: string): Promise<CareerWithMatch[]> {
   const [occupations, savedCareers, assessment] = await Promise.all([
     db.occupation.findMany({
       where: {
+        ...STEM_FILTER,
         OR: [
           { title: { contains: query, mode: "insensitive" } },
           { description: { contains: query, mode: "insensitive" } },
@@ -757,8 +761,8 @@ export async function getCareerById(id: string): Promise<CareerDetail | null> {
 
   const [occupation, savedCareers, assessment, relatedOccupations] =
     await Promise.all([
-      db.occupation.findUnique({
-        where: { id },
+      db.occupation.findFirst({
+        where: { id, ...STEM_FILTER },
         include: {
           skills: { orderBy: { importance: "desc" } },
           knowledge: { orderBy: { importance: "desc" } },
