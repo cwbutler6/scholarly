@@ -2,17 +2,22 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
 
 const STORAGE_KEY = "ai-chat-messages";
 
+const transport = new DefaultChatTransport({
+  api: "/api/chat",
+});
+
 export function useAiChatLogic() {
   const [inputValue, setInputValue] = useState("");
-  const [isHydrated, setIsHydrated] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const isHydratedRef = useRef(false);
 
   const { messages, sendMessage, status, setMessages } = useChat({
-    api: "/api/chat",
+    transport,
   });
 
   const isLoading = status === "streaming" || status === "submitted";
@@ -31,14 +36,14 @@ export function useAiChatLogic() {
         localStorage.removeItem(STORAGE_KEY);
       }
     }
-    setIsHydrated(true);
+    isHydratedRef.current = true;
   }, [setMessages]);
 
   useEffect(() => {
-    if (isHydrated && messages.length > 0) {
+    if (isHydratedRef.current && messages.length > 0) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
     }
-  }, [messages, isHydrated]);
+  }, [messages]);
 
   useEffect(() => {
     scrollToBottom();
@@ -108,7 +113,6 @@ export function useAiChatLogic() {
     inputValue,
     setInputValue,
     isLoading,
-    isHydrated,
     messagesEndRef,
     inputRef,
     handleSubmit,
