@@ -5,6 +5,7 @@ import { ChevronLeft, DollarSign, TrendingUp, GraduationCap } from "lucide-react
 import { getCareerById, getRecommendedCareers } from "@/lib/careers";
 import { CareerList } from "@/components/career-list";
 import { ConvictionScore } from "./conviction-score";
+import { AiChatButton } from "@/components/ai-chat-button";
 
 interface CareerPageProps {
   params: Promise<{ id: string }>;
@@ -43,26 +44,7 @@ export default async function CareerPage({ params, searchParams }: CareerPagePro
           height={37}
           className="h-auto w-auto"
         />
-        <Link
-          href="/chat"
-          className="flex h-12 items-center gap-2.5 rounded-[24px] bg-gradient-to-r from-[#FFEB7B] to-[#FE9900] py-[5px] pl-[5px] pr-5 font-medium text-gray-900 shadow-sm transition-all hover:shadow-md"
-        >
-          <Image
-            src="/images/ai-chat-orb.png"
-            alt=""
-            width={38}
-            height={38}
-            className="h-[38px] w-[38px] rounded-full"
-          />
-          <span>AI Chat</span>
-          <Image
-            src="/images/ai-chat-icon.svg"
-            alt=""
-            width={20}
-            height={20}
-            className="h-5 w-5"
-          />
-        </Link>
+        <AiChatButton />
       </header>
 
       <div className="flex flex-col gap-6 bg-[#FE9900] px-[60px] py-10">

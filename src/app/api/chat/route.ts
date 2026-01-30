@@ -1,5 +1,5 @@
 import { openai } from "@ai-sdk/openai";
-import { streamText } from "ai";
+import { streamText, convertToModelMessages } from "ai";
 import { z } from "zod";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
   const result = streamText({
     model: openai("gpt-4o-mini"),
     system: systemPrompt,
-    messages,
+    messages: await convertToModelMessages(messages),
     tools: {
       getUserProfile: {
         description: "Get the current user's profile information",
