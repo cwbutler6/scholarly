@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { X } from "lucide-react";
 import { updateBio } from "./actions";
+import { useAnalytics } from "@/lib/posthog";
 
 interface EditAboutModalProps {
   bio: string;
@@ -11,6 +12,7 @@ interface EditAboutModalProps {
 
 export function EditAboutModal({ bio, onClose }: EditAboutModalProps) {
   const [isPending, startTransition] = useTransition();
+  const { track } = useAnalytics();
   const [value, setValue] = useState(bio);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -20,6 +22,7 @@ export function EditAboutModal({ bio, onClose }: EditAboutModalProps) {
 
     startTransition(async () => {
       await updateBio(formData);
+      track("profile_updated", { section: "about" });
       onClose();
     });
   };

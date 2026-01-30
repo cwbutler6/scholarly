@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Outfit, JetBrains_Mono } from "next/font/google";
-import { PostHogProvider, PostHogPageview } from "@/lib/posthog";
+import { PostHogProvider, PostHogPageview, PostHogUserIdentifier } from "@/lib/posthog";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -40,6 +40,7 @@ export default function RootLayout({
           className={`${outfit.variable} ${jetbrainsMono.variable} antialiased`}
         >
           <PostHogProvider>
+            <PostHogUserIdentifier />
             <PostHogPageview />
             {children}
           </PostHogProvider>

@@ -6,6 +6,7 @@ import ReactMarkdown from "react-markdown";
 import { ArrowRight, ArrowUp, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAiChatLogic } from "@/hooks/use-ai-chat";
+import { useAnalytics } from "@/lib/posthog";
 
 interface AiChatDrawerProps {
   isOpen: boolean;
@@ -31,12 +32,26 @@ export function AiChatDrawer({ isOpen, onClose }: AiChatDrawerProps) {
     handleKeyDown,
     getTextContent,
   } = useAiChatLogic();
+  const { track } = useAnalytics();
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
       inputRef.current.focus();
     }
   }, [isOpen, inputRef]);
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    const messageLength = inputValue.trim().length;
+    if (messageLength > 0) {
+      track("chat_message_sent", { messageLength });
+    }
+    handleSubmit(e);
+  };
+
+  const handleSuggestionWithTracking = (prompt: string) => {
+    track("chat_message_sent", { messageLength: prompt.length });
+    handleSuggestionClick(prompt);
+  };
 
   return (
     <>
@@ -143,7 +158,7 @@ export function AiChatDrawer({ isOpen, onClose }: AiChatDrawerProps) {
             {suggestionPrompts.map((prompt, index) => (
               <button
                 key={index}
-                onClick={() => handleSuggestionClick(prompt)}
+                onClick={() => handleSuggestionWithTracking(prompt)}
                 className="w-[200px] shrink-0 rounded-2xl bg-[#F6F6F6] p-3 text-left text-sm font-normal leading-tight text-[#898989] transition-colors hover:bg-gray-200 md:w-[250px] md:p-4 md:text-base md:leading-none"
               >
                 {prompt}
@@ -152,7 +167,7 @@ export function AiChatDrawer({ isOpen, onClose }: AiChatDrawerProps) {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="border-t border-gray-100 p-4">
+        <form onSubmit={handleFormSubmit} className="border-t border-gray-100 p-4">
           <div className="flex items-end gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3">
             <button
               type="button"

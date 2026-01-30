@@ -110,13 +110,37 @@ function calculateMatch(
 }
 
 /**
- * Calculate conviction score based on skill overlap between user and occupation
+ * Conviction Score Weights
+ * Total = 100%
+ */
+const CONVICTION_WEIGHTS = {
+  riasec: 0.3,
+  skills: 0.3,
+  education: 0.2,
+  engagement: 0.2,
+};
+
+/**
+ * Calculate comprehensive conviction score based on multiple factors:
+ * - RIASEC personality match (30%)
+ * - Skills match (30%)
+ * - Education/Knowledge alignment (20%)
+ * - Engagement (videos watched, time spent) (20%)
  */
 async function calculateConvictionScore(
   userId: string,
   occupationId: string
 ): Promise<number> {
-  const [userSkills, occupationSkills] = await Promise.all([
+  const [
+    userSkills,
+    occupationSkills,
+    occupationKnowledge,
+    assessment,
+    occupation,
+    videoWatches,
+    engagement,
+    user,
+  ] = await Promise.all([
     db.userSkill.findMany({
       where: { userId },
       include: { skill: true },
@@ -124,38 +148,328 @@ async function calculateConvictionScore(
     db.occupationSkill.findMany({
       where: { occupationId },
     }),
+    db.occupationKnowledge.findMany({
+      where: { occupationId },
+    }),
+    db.assessment.findFirst({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+    }),
+    db.occupation.findUnique({
+      where: { id: occupationId },
+      select: {
+        riasecRealistic: true,
+        riasecInvestigative: true,
+        riasecArtistic: true,
+        riasecSocial: true,
+        riasecEnterprising: true,
+        riasecConventional: true,
+        typicalEducation: true,
+        jobZone: true,
+      },
+    }),
+    db.careerVideoWatch.findMany({
+      where: { userId, occupationId },
+    }),
+    db.careerEngagement.findUnique({
+      where: { userId_occupationId: { userId, occupationId } },
+    }),
+    db.user.findUnique({
+      where: { id: userId },
+      select: { accountType: true, graduationYear: true },
+    }),
   ]);
 
-  if (userSkills.length === 0 || occupationSkills.length === 0) {
-    return 50;
+  let riasecScore = 50;
+  let skillsScore = 0;
+  let educationScore = 50;
+  let engagementScore = 0;
+
+  if (assessment && occupation) {
+    const userScores: RiasecScores = {
+      r: assessment.realistic,
+      i: assessment.investigative,
+      a: assessment.artistic,
+      s: assessment.social,
+      e: assessment.enterprising,
+      c: assessment.conventional,
+    };
+    riasecScore = calculateMatch(userScores, occupation);
   }
 
-  const userSkillNames = new Set(
-    userSkills.map((us) => us.skill.name.toLowerCase())
-  );
-  const occSkillNames = occupationSkills.map((os) => os.name.toLowerCase());
+  if (userSkills.length > 0 && occupationSkills.length > 0) {
+    const userSkillNames = new Set(
+      userSkills.map((us) => us.skill.name.toLowerCase())
+    );
 
-  let matchedImportance = 0;
-  let totalImportance = 0;
+    let matchedImportance = 0;
+    let totalImportance = 0;
 
-  for (const occSkill of occupationSkills) {
-    const importance = occSkill.importance || 50;
-    totalImportance += importance;
+    for (const occSkill of occupationSkills) {
+      const importance = occSkill.importance || 50;
+      totalImportance += importance;
 
-    if (userSkillNames.has(occSkill.name.toLowerCase())) {
-      const userSkill = userSkills.find(
-        (us) => us.skill.name.toLowerCase() === occSkill.name.toLowerCase()
-      );
-      const proficiencyMultiplier = userSkill
-        ? userSkill.proficiency / 100
-        : 0.5;
-      matchedImportance += importance * proficiencyMultiplier;
+      if (userSkillNames.has(occSkill.name.toLowerCase())) {
+        const userSkill = userSkills.find(
+          (us) => us.skill.name.toLowerCase() === occSkill.name.toLowerCase()
+        );
+        const proficiencyMultiplier = userSkill
+          ? userSkill.proficiency / 100
+          : 0.5;
+        matchedImportance += importance * proficiencyMultiplier;
+      }
+    }
+
+    if (totalImportance > 0) {
+      skillsScore = Math.round((matchedImportance / totalImportance) * 100);
     }
   }
 
-  if (totalImportance === 0) return 50;
+  if (occupation && user) {
+    const jobZone = occupation.jobZone || 3;
+    const accountType = user.accountType || "high_school";
 
-  return Math.round((matchedImportance / totalImportance) * 100);
+    const educationLevelMap: Record<string, number> = {
+      high_school: 2,
+      some_college: 3,
+      associates: 3,
+      bachelors: 4,
+      masters: 5,
+      doctorate: 5,
+    };
+
+    const userEducationLevel = educationLevelMap[accountType] || 2;
+
+    if (userEducationLevel >= jobZone) {
+      educationScore = 100;
+    } else if (userEducationLevel === jobZone - 1) {
+      educationScore = 70;
+    } else if (userEducationLevel === jobZone - 2) {
+      educationScore = 40;
+    } else {
+      educationScore = 20;
+    }
+
+    if (occupationKnowledge.length > 0) {
+      const userSkillNames = new Set(
+        userSkills.map((us) => us.skill.name.toLowerCase())
+      );
+      let knowledgeMatches = 0;
+      for (const knowledge of occupationKnowledge) {
+        if (userSkillNames.has(knowledge.name.toLowerCase())) {
+          knowledgeMatches++;
+        }
+      }
+      const knowledgeMatchPercent =
+        (knowledgeMatches / occupationKnowledge.length) * 100;
+      educationScore = Math.round((educationScore + knowledgeMatchPercent) / 2);
+    }
+  }
+
+  const completedVideos = videoWatches.filter((v) => v.completed).length;
+  const totalWatchTime = videoWatches.reduce(
+    (sum, v) => sum + v.watchedSeconds,
+    0
+  );
+  const pageViews = engagement?.pageViews || 0;
+  const timeSpent = engagement?.timeSpentSeconds || 0;
+
+  const videoScore = Math.min(completedVideos * 20, 50);
+  const watchTimeScore = Math.min(Math.floor(totalWatchTime / 60) * 5, 25);
+  const pageViewScore = Math.min(pageViews * 5, 15);
+  const timeSpentScore = Math.min(Math.floor(timeSpent / 60) * 2, 10);
+
+  engagementScore = videoScore + watchTimeScore + pageViewScore + timeSpentScore;
+  engagementScore = Math.min(engagementScore, 100);
+
+  const weightedScore =
+    riasecScore * CONVICTION_WEIGHTS.riasec +
+    skillsScore * CONVICTION_WEIGHTS.skills +
+    educationScore * CONVICTION_WEIGHTS.education +
+    engagementScore * CONVICTION_WEIGHTS.engagement;
+
+  return Math.round(Math.max(0, Math.min(100, weightedScore)));
+}
+
+export interface ConvictionBreakdown {
+  total: number;
+  riasec: number;
+  skills: number;
+  education: number;
+  engagement: number;
+}
+
+/**
+ * Get detailed conviction score breakdown for UI display
+ */
+export async function getConvictionBreakdown(
+  userId: string,
+  occupationId: string
+): Promise<ConvictionBreakdown> {
+  const [
+    userSkills,
+    occupationSkills,
+    occupationKnowledge,
+    assessment,
+    occupation,
+    videoWatches,
+    engagement,
+    user,
+  ] = await Promise.all([
+    db.userSkill.findMany({
+      where: { userId },
+      include: { skill: true },
+    }),
+    db.occupationSkill.findMany({
+      where: { occupationId },
+    }),
+    db.occupationKnowledge.findMany({
+      where: { occupationId },
+    }),
+    db.assessment.findFirst({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+    }),
+    db.occupation.findUnique({
+      where: { id: occupationId },
+      select: {
+        riasecRealistic: true,
+        riasecInvestigative: true,
+        riasecArtistic: true,
+        riasecSocial: true,
+        riasecEnterprising: true,
+        riasecConventional: true,
+        typicalEducation: true,
+        jobZone: true,
+      },
+    }),
+    db.careerVideoWatch.findMany({
+      where: { userId, occupationId },
+    }),
+    db.careerEngagement.findUnique({
+      where: { userId_occupationId: { userId, occupationId } },
+    }),
+    db.user.findUnique({
+      where: { id: userId },
+      select: { accountType: true, graduationYear: true },
+    }),
+  ]);
+
+  let riasecScore = 50;
+  let skillsScore = 0;
+  let educationScore = 50;
+  let engagementScore = 0;
+
+  if (assessment && occupation) {
+    const userScores: RiasecScores = {
+      r: assessment.realistic,
+      i: assessment.investigative,
+      a: assessment.artistic,
+      s: assessment.social,
+      e: assessment.enterprising,
+      c: assessment.conventional,
+    };
+    riasecScore = calculateMatch(userScores, occupation);
+  }
+
+  if (userSkills.length > 0 && occupationSkills.length > 0) {
+    const userSkillNames = new Set(
+      userSkills.map((us) => us.skill.name.toLowerCase())
+    );
+
+    let matchedImportance = 0;
+    let totalImportance = 0;
+
+    for (const occSkill of occupationSkills) {
+      const importance = occSkill.importance || 50;
+      totalImportance += importance;
+
+      if (userSkillNames.has(occSkill.name.toLowerCase())) {
+        const userSkill = userSkills.find(
+          (us) => us.skill.name.toLowerCase() === occSkill.name.toLowerCase()
+        );
+        const proficiencyMultiplier = userSkill
+          ? userSkill.proficiency / 100
+          : 0.5;
+        matchedImportance += importance * proficiencyMultiplier;
+      }
+    }
+
+    if (totalImportance > 0) {
+      skillsScore = Math.round((matchedImportance / totalImportance) * 100);
+    }
+  }
+
+  if (occupation && user) {
+    const jobZone = occupation.jobZone || 3;
+    const accountType = user.accountType || "high_school";
+
+    const educationLevelMap: Record<string, number> = {
+      high_school: 2,
+      some_college: 3,
+      associates: 3,
+      bachelors: 4,
+      masters: 5,
+      doctorate: 5,
+    };
+
+    const userEducationLevel = educationLevelMap[accountType] || 2;
+
+    if (userEducationLevel >= jobZone) {
+      educationScore = 100;
+    } else if (userEducationLevel === jobZone - 1) {
+      educationScore = 70;
+    } else if (userEducationLevel === jobZone - 2) {
+      educationScore = 40;
+    } else {
+      educationScore = 20;
+    }
+
+    if (occupationKnowledge.length > 0) {
+      const userSkillNames = new Set(
+        userSkills.map((us) => us.skill.name.toLowerCase())
+      );
+      let knowledgeMatches = 0;
+      for (const knowledge of occupationKnowledge) {
+        if (userSkillNames.has(knowledge.name.toLowerCase())) {
+          knowledgeMatches++;
+        }
+      }
+      const knowledgeMatchPercent =
+        (knowledgeMatches / occupationKnowledge.length) * 100;
+      educationScore = Math.round((educationScore + knowledgeMatchPercent) / 2);
+    }
+  }
+
+  const completedVideos = videoWatches.filter((v) => v.completed).length;
+  const totalWatchTime = videoWatches.reduce(
+    (sum, v) => sum + v.watchedSeconds,
+    0
+  );
+  const pageViews = engagement?.pageViews || 0;
+  const timeSpent = engagement?.timeSpentSeconds || 0;
+
+  const videoScore = Math.min(completedVideos * 20, 50);
+  const watchTimeScore = Math.min(Math.floor(totalWatchTime / 60) * 5, 25);
+  const pageViewScore = Math.min(pageViews * 5, 15);
+  const timeSpentScore = Math.min(Math.floor(timeSpent / 60) * 2, 10);
+
+  engagementScore = videoScore + watchTimeScore + pageViewScore + timeSpentScore;
+  engagementScore = Math.min(engagementScore, 100);
+
+  const total =
+    riasecScore * CONVICTION_WEIGHTS.riasec +
+    skillsScore * CONVICTION_WEIGHTS.skills +
+    educationScore * CONVICTION_WEIGHTS.education +
+    engagementScore * CONVICTION_WEIGHTS.engagement;
+
+  return {
+    total: Math.round(Math.max(0, Math.min(100, total))),
+    riasec: riasecScore,
+    skills: skillsScore,
+    education: educationScore,
+    engagement: engagementScore,
+  };
 }
 
 export async function getRecommendedCareers(limit = 10): Promise<CareerWithMatch[]> {

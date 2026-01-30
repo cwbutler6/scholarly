@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { X } from "lucide-react";
 import { updatePersonalInfo } from "./actions";
+import { useAnalytics } from "@/lib/posthog";
 import type { User } from "@/generated/prisma";
 
 interface EditPersonalInfoModalProps {
@@ -22,6 +23,7 @@ export function EditPersonalInfoModal({
   onClose,
 }: EditPersonalInfoModalProps) {
   const [isPending, startTransition] = useTransition();
+  const { track } = useAnalytics();
   const [firstName, setFirstName] = useState(user.firstName || "");
   const [lastName, setLastName] = useState(user.lastName || "");
   const [location, setLocation] = useState(user.location || "");
@@ -47,6 +49,10 @@ export function EditPersonalInfoModal({
 
     startTransition(async () => {
       await updatePersonalInfo(formData);
+      track("profile_updated", {
+        section: "personal_info",
+        fields: ["firstName", "lastName", "location", "accountType", "graduationYear", "dateOfBirth"],
+      });
       onClose();
     });
   };

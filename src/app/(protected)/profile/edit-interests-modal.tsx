@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { X, Plus } from "lucide-react";
 import { addUserInterest, removeUserInterest } from "./actions";
+import { useAnalytics } from "@/lib/posthog";
 import type { UserInterest } from "@/generated/prisma";
 
 interface EditInterestsModalProps {
@@ -15,6 +16,7 @@ export function EditInterestsModal({
   onClose,
 }: EditInterestsModalProps) {
   const [isPending, startTransition] = useTransition();
+  const { track } = useAnalytics();
   const [newInterest, setNewInterest] = useState("");
 
   const handleAddInterest = (e: React.FormEvent) => {
@@ -23,6 +25,7 @@ export function EditInterestsModal({
 
     startTransition(async () => {
       await addUserInterest(newInterest);
+      track("profile_updated", { section: "interests" });
       setNewInterest("");
     });
   };
@@ -30,6 +33,7 @@ export function EditInterestsModal({
   const handleRemoveInterest = (interestId: string) => {
     startTransition(async () => {
       await removeUserInterest(interestId);
+      track("profile_updated", { section: "interests" });
     });
   };
 

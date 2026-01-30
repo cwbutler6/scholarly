@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { X, Check, Search } from "lucide-react";
 import { addUserSkill, removeUserSkill, updateSkillProficiency } from "./actions";
+import { useAnalytics } from "@/lib/posthog";
 import type { Skill, UserSkill } from "@/generated/prisma";
 
 type UserSkillWithSkill = UserSkill & { skill: Skill };
@@ -35,6 +36,7 @@ export function EditSkillsModal({
   onClose,
 }: EditSkillsModalProps) {
   const [isPending, startTransition] = useTransition();
+  const { track } = useAnalytics();
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [editingProficiency, setEditingProficiency] = useState<string | null>(
@@ -51,6 +53,7 @@ export function EditSkillsModal({
       } else {
         await addUserSkill(skill.id, 50);
       }
+      track("profile_updated", { section: "skills" });
     });
   };
 

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { saveAssessment } from "../actions";
+import { useAnalytics } from "@/lib/posthog";
 
 interface AssessmentStepProps {
   initialAnswers?: Record<number, number>;
@@ -57,9 +58,16 @@ export function AssessmentStep({
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [answers, setAnswers] = useState<Record<number, number>>(initialAnswers);
   const [isSaving, setIsSaving] = useState(false);
+  const { track } = useAnalytics();
 
   const currentQuestion = riasecQuestions[currentIndex];
   const progress = ((currentIndex + 1) / riasecQuestions.length) * 100;
+
+  useEffect(() => {
+    if (currentIndex === 0 && Object.keys(initialAnswers).length === 0) {
+      track("assessment_started", { type: "riasec" });
+    }
+  }, []);
 
   const handleAnswer = async (value: number) => {
     const newAnswers = { ...answers, [currentQuestion.id]: value };
@@ -73,6 +81,7 @@ export function AssessmentStep({
       setIsSaving(true);
       const scores = calculateScores(newAnswers);
       await saveAssessment(scores);
+      track("assessment_completed", { type: "riasec", scores });
       setIsSaving(false);
       onComplete();
     }

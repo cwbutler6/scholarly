@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAnalytics } from "@/lib/posthog";
 
 interface CareerCardProps {
   id: string;
@@ -30,6 +31,8 @@ export function CareerCard({
   onSave,
   from,
 }: CareerCardProps) {
+  const { track } = useAnalytics();
+
   const formatGrowth = (g: string | undefined) => {
     if (!g) return "N/A";
     const num = parseFloat(g.replace(/[^0-9.-]/g, ""));
@@ -37,6 +40,24 @@ export function CareerCard({
     if (g.toLowerCase().includes("faster")) return "↗ Fast";
     if (g.toLowerCase().includes("slower")) return "↘ Slow";
     return g;
+  };
+
+  const handleSave = (e: React.MouseEvent) => {
+    e.preventDefault();
+    track(isSaved ? "career_unsaved" : "career_saved", {
+      careerId: id,
+      careerTitle: title,
+    });
+    onSave?.();
+  };
+
+  const handleViewClick = () => {
+    track("career_viewed", {
+      careerId: id,
+      careerTitle: title,
+      matchPercent,
+      source: from || "unknown",
+    });
   };
 
   return (
@@ -56,10 +77,7 @@ export function CareerCard({
         )}
         <button
           title="Save career"
-          onClick={(e) => {
-            e.preventDefault();
-            onSave?.();
-          }}
+          onClick={handleSave}
           className={cn(
             "absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-full bg-gray-800/60 text-white transition-colors hover:bg-gray-800/80 md:right-4 md:top-4",
             isSaved && "bg-red-500/80 hover:bg-red-500"
@@ -95,6 +113,7 @@ export function CareerCard({
 
         <Link
           href={`/careers/${id}${from ? `?from=${from}` : ""}`}
+          onClick={handleViewClick}
           className="mt-auto flex h-11 items-center justify-center gap-1.5 rounded-[12px] bg-[#010101] text-base font-medium text-white transition-colors hover:bg-gray-800"
         >
           View Career
