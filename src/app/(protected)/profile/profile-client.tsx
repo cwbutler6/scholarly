@@ -211,7 +211,10 @@ export function ProfileClient({
                       {programmingSkills.map((us) => (
                         <span
                           key={us.id}
-                          className="rounded-full border border-[#22C55E] px-3 py-1 text-sm text-[#22C55E]"
+                          className="rounded-full border border-[#AD46FF]/20 px-4 py-2 text-[13px] font-medium leading-[19.5px] text-[#9810FA]"
+                          style={{
+                            background: "linear-gradient(180deg, rgba(173, 70, 255, 0.1) 0%, rgba(246, 51, 154, 0.1) 100%)",
+                          }}
                         >
                           {us.skill.name}
                         </span>
@@ -231,7 +234,7 @@ export function ProfileClient({
                       {toolsAndFrameworks.map((us) => (
                         <span
                           key={us.id}
-                          className="rounded-full border border-gray-300 px-3 py-1 text-sm text-gray-600"
+                          className="rounded-full border border-[#F0F0F0] bg-[#FAFAFA] px-4 py-2 text-[13px] font-normal leading-[19.5px] text-[#4A5565]"
                         >
                           {us.skill.name}
                         </span>
@@ -257,7 +260,10 @@ export function ProfileClient({
                       {userInterests.map((interest) => (
                         <span
                           key={interest.id}
-                          className="rounded-full bg-[#E0F2F1] px-3 py-1 text-sm text-[#00796B]"
+                          className="rounded-full border border-[#315A3F]/20 px-4 py-2 text-[13px] font-normal leading-[19.5px] text-[#315A3F]"
+                          style={{
+                            background: "linear-gradient(180deg, rgba(49, 90, 63, 0.1) 0%, rgba(45, 100, 11, 0.1) 100%)",
+                          }}
                         >
                           {interest.name}
                         </span>
