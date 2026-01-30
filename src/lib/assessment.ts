@@ -161,7 +161,7 @@ export function calculateLocalScores(
 
   for (const [indexStr, value] of Object.entries(answers)) {
     const index = Number(indexStr);
-    const area = questionCategories[index]?.toUpperCase();
+    const area = questionCategories[index]?.charAt(0).toUpperCase();
     const scoreKey = areaToScore[area];
     if (scoreKey) {
       scores[scoreKey] += value;
