@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
         userId: user.id,
         type: event.type,
         careerId: event.careerId ?? null,
-        metadata: event.metadata ?? Prisma.JsonNull,
+        metadata: (event.metadata as Prisma.InputJsonValue) ?? Prisma.JsonNull,
       })),
     });
 
