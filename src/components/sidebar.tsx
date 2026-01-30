@@ -3,6 +3,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
+import { useClerk } from "@clerk/nextjs";
+import { LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   DashboardIcon,
@@ -28,6 +30,7 @@ interface SidebarProps {
 export function Sidebar({ userInitials, userImageUrl }: SidebarProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { signOut } = useClerk();
   const fromParam = searchParams.get("from");
   const isOnCareerPage = pathname.startsWith("/careers/");
 
@@ -93,6 +96,14 @@ export function Sidebar({ userInitials, userImageUrl }: SidebarProps) {
             )}
           </div>
         </Link>
+
+        <button
+          onClick={() => signOut({ redirectUrl: "/" })}
+          className="mt-2 flex h-10 w-10 items-center justify-center rounded-xl text-[#9C9C9C] transition-colors hover:bg-red-50 hover:text-red-500"
+          title="Sign out"
+        >
+          <LogOut className="h-5 w-5" />
+        </button>
       </nav>
     </aside>
   );

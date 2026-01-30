@@ -635,7 +635,7 @@ export async function getRecommendedCareers(limit = 10): Promise<CareerWithMatch
       let imageUrl = occ.imageUrl;
 
       if (!imageUrl) {
-        imageUrl = await getCareerImageUrl(occ.title);
+        imageUrl = await getCareerImageUrl(occ.title, occ.id);
         if (imageUrl) {
           db.occupation
             .update({
@@ -731,7 +731,7 @@ export async function searchCareers(query: string): Promise<CareerWithMatch[]> {
       let imageUrl = occ.imageUrl;
       
       if (!imageUrl) {
-        imageUrl = await getCareerImageUrl(occ.title);
+        imageUrl = await getCareerImageUrl(occ.title, occ.id);
         if (imageUrl) {
           db.occupation.update({
             where: { id: occ.id },
@@ -820,7 +820,7 @@ export async function getRelatedCareers(
       let imageUrl = occ.imageUrl;
 
       if (!imageUrl) {
-        imageUrl = await getCareerImageUrl(occ.title);
+        imageUrl = await getCareerImageUrl(occ.title, occ.id);
         if (imageUrl) {
           db.occupation
             .update({
@@ -905,7 +905,7 @@ export async function getCareerById(id: string): Promise<CareerDetail | null> {
 
   let imageUrl = occupation.imageUrl;
   if (!imageUrl) {
-    imageUrl = await getCareerImageUrl(occupation.title);
+    imageUrl = await getCareerImageUrl(occupation.title, occupation.id);
     if (imageUrl) {
       db.occupation
         .update({

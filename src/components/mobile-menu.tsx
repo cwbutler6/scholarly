@@ -4,7 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
-import { Menu } from "lucide-react";
+import { useClerk } from "@clerk/nextjs";
+import { Menu, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Sheet,
@@ -38,6 +39,7 @@ export function MobileMenu({ userInitials, userImageUrl }: MobileMenuProps) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { signOut } = useClerk();
   const fromParam = searchParams.get("from");
   const isOnCareerPage = pathname.startsWith("/careers/");
 
@@ -123,6 +125,17 @@ export function MobileMenu({ userInitials, userImageUrl }: MobileMenuProps) {
             </div>
             <span className="font-medium">Profile</span>
           </Link>
+
+          <button
+            onClick={() => {
+              setOpen(false);
+              signOut({ redirectUrl: "/" });
+            }}
+            className="mt-2 flex h-12 w-full items-center gap-3 rounded-xl px-4 text-gray-600 transition-colors hover:bg-red-50 hover:text-red-500"
+          >
+            <LogOut className="h-5 w-5" />
+            <span className="font-medium">Sign out</span>
+          </button>
         </div>
       </SheetContent>
     </Sheet>
