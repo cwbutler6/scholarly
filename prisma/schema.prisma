@@ -27,13 +27,20 @@ model User {
   accountType    String?   @default("high_school") @map("account_type")
   graduationYear Int?      @map("graduation_year")
 
-  assessments       Assessment[]
-  savedCareers      SavedCareer[]
-  chatSessions      ChatSession[]
-  userSkills        UserSkill[]
-  userInterests     UserInterest[]
-  videoWatches      CareerVideoWatch[]
-  careerEngagements CareerEngagement[]
+  currentStreak   Int       @default(0) @map("current_streak")
+  longestStreak   Int       @default(0) @map("longest_streak")
+  totalActiveDays Int       @default(0) @map("total_active_days")
+  lastActiveDate  DateTime? @map("last_active_date")
+
+  assessments        Assessment[]
+  savedCareers       SavedCareer[]
+  chatSessions       ChatSession[]
+  userSkills         UserSkill[]
+  userInterests      UserInterest[]
+  videoWatches       CareerVideoWatch[]
+  careerEngagements  CareerEngagement[]
+  questionAnswers    QuestionAnswer[]
+  crosswordProgress  CrosswordProgress[]
 
   @@map("users")
 }
@@ -324,4 +331,81 @@ model CareerEngagement {
   @@unique([userId, occupationId])
   @@index([userId])
   @@map("career_engagements")
+}
+
+/// Question of the Day - multiple choice questions for daily engagement
+model Question {
+  id             String   @id @default(cuid())
+  questionText   String   @map("question_text")
+  option1        String
+  option2        String
+  option3        String
+  option4        String
+  correctAnswer  Int      @map("correct_answer")
+  funFactHeader  String?  @map("fun_fact_header")
+  funFactText    String?  @map("fun_fact_text")
+  hint           String?
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  answers QuestionAnswer[]
+
+  @@map("questions")
+}
+
+/// User answers to questions
+model QuestionAnswer {
+  id                   String   @id @default(cuid())
+  questionId           String   @map("question_id")
+  userId               String   @map("user_id")
+  selectedAnswerOption Int      @map("selected_answer_option")
+  isCorrect            Boolean  @default(false) @map("is_correct")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([questionId, userId])
+  @@map("question_answers")
+}
+
+/// Daily crossword puzzle challenges
+model Crossword {
+  id           String   @id @default(cuid())
+  title        String?
+  rows         Int      @default(5)
+  cols         Int      @default(5)
+  grid         Json
+  clues        Json
+  hint         String?
+  funFactTitle String?  @map("fun_fact_title")
+  funFactText  String?  @map("fun_fact_text")
+  activeDate   DateTime? @map("active_date")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  userProgress CrosswordProgress[]
+
+  @@index([activeDate])
+  @@map("crosswords")
+}
+
+/// User progress on crossword puzzles
+model CrosswordProgress {
+  id           String   @id @default(cuid())
+  crosswordId  String   @map("crossword_id")
+  userId       String   @map("user_id")
+  userGrid     Json     @map("user_grid")
+  hintsUsed    Int      @default(0) @map("hints_used")
+  completed    Boolean  @default(false)
+  completedAt  DateTime? @map("completed_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  crossword Crossword @relation(fields: [crosswordId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([crosswordId, userId])
+  @@map("crossword_progress")
 }

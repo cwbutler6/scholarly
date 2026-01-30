@@ -1,14 +1,31 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { getOrCreateUser } from "@/lib/user";
 import { getRecommendedCareers } from "@/lib/careers";
+import { getTodaysQuestion } from "@/lib/questions";
+import { getTodaysCrossword } from "@/lib/crossword";
+import { recordDailyActivity } from "@/lib/streaks";
 import { CareerList } from "@/components/career-list";
+import {
+  DashboardStreakCard,
+  DashboardQOTDCard,
+  DashboardChallengeCard,
+} from "./dashboard-client";
+import {
+  submitQOTDAnswer,
+  useCrosswordHintAction,
+  submitCrosswordAction,
+  resetCrosswordAction,
+  saveCrosswordProgressAction,
+} from "./actions";
 
 export default async function DashboardPage() {
-  const [user, careers] = await Promise.all([
+  const [user, careers, question, crossword, streak] = await Promise.all([
     getOrCreateUser(),
     getRecommendedCareers(10),
+    getTodaysQuestion(),
+    getTodaysCrossword(),
+    recordDailyActivity(),
   ]);
 
   const firstName = user?.firstName || "there";
@@ -48,39 +65,18 @@ export default async function DashboardPage() {
         </section>
 
         <section className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <div className="relative flex h-[180px] flex-col rounded-2xl bg-[#F6F6F6] p-5 md:h-[252px]">
-            <span className="text-sm text-gray-500">Your</span>
-            <span className="text-xl font-bold text-gray-900">Daily Streak</span>
-            <Image
-              src="/images/icon-streak.png"
-              alt="Streak"
-              width={140}
-              height={140}
-              className="absolute bottom-4 right-4 h-auto w-[100px] md:w-auto"
-            />
-          </div>
-          <div className="relative flex h-[180px] flex-col rounded-2xl bg-[#F6F6F6] p-5 md:h-[252px]">
-            <span className="text-sm text-gray-500">Today&apos;s</span>
-            <span className="text-xl font-bold text-gray-900">Question</span>
-            <Image
-              src="/images/icon-question.png"
-              alt="Question"
-              width={140}
-              height={140}
-              className="absolute bottom-4 right-4 h-auto w-[100px] md:w-auto"
-            />
-          </div>
-          <div className="relative flex h-[180px] flex-col rounded-2xl bg-[#F6F6F6] p-5 sm:col-span-2 md:h-[252px] lg:col-span-1">
-            <span className="text-sm text-gray-500">Today&apos;s</span>
-            <span className="text-xl font-bold text-gray-900">Challenge</span>
-            <Image
-              src="/images/icon-challenge.png"
-              alt="Challenge"
-              width={140}
-              height={140}
-              className="absolute bottom-4 right-4 h-auto w-[100px] md:w-auto"
-            />
-          </div>
+          <DashboardStreakCard streak={streak} />
+          <DashboardQOTDCard
+            question={question}
+            submitAnswer={submitQOTDAnswer}
+          />
+          <DashboardChallengeCard
+            crossword={crossword}
+            onUseHint={useCrosswordHintAction}
+            onSubmit={submitCrosswordAction}
+            onReset={resetCrosswordAction}
+            onSaveProgress={saveCrosswordProgressAction}
+          />
         </section>
 
         <section className="mb-6 rounded-2xl bg-[#F6F6F6] p-4 md:p-6">

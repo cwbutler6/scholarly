@@ -371,6 +371,115 @@ async function main() {
   }
 
   console.log(`\nSeeded ${sampleOccupations.length} occupations with skills and abilities`);
+
+  console.log("\nSeeding sample questions...");
+  const sampleQuestions = [
+    {
+      id: "qotd-sample-1",
+      questionText: "Which of these skills is most valuable for a software engineer working in a remote-first startup?",
+      option1: "Advanced algorithm knowledge",
+      option2: "Strong written communication & async collaboration",
+      option3: "Expertise in a single programming language",
+      option4: "Ability to work extended hours",
+      correctAnswer: 2,
+      funFactHeader: "Remote Work Reality",
+      funFactText: "Studies show that clear written communication is the #1 predictor of success in remote engineering roles. Companies like GitLab and Zapier prioritize async communication skills over raw technical ability when hiring.",
+      hint: "Think about what makes remote teams successful",
+    },
+    {
+      id: "qotd-sample-2",
+      questionText: "What is the fastest-growing healthcare occupation according to the Bureau of Labor Statistics?",
+      option1: "Registered Nurses",
+      option2: "Nurse Practitioners",
+      option3: "Physical Therapists",
+      option4: "Medical Assistants",
+      correctAnswer: 2,
+      funFactHeader: "Healthcare Boom",
+      funFactText: "Nurse Practitioners are projected to grow 45% from 2022 to 2032, much faster than the average for all occupations. This growth is driven by an aging population and increased emphasis on preventive care.",
+      hint: "Consider which roles are expanding their scope of practice",
+    },
+  ];
+
+  for (const question of sampleQuestions) {
+    await prisma.question.upsert({
+      where: { id: question.id },
+      update: question,
+      create: question,
+    });
+    console.log(`  Upserted question: ${question.id}`);
+  }
+  console.log(`Seeded ${sampleQuestions.length} sample questions`);
+
+  console.log("\nSeeding sample crosswords...");
+  const sampleCrosswords = [
+    {
+      id: "crossword-sample-1",
+      title: "Career Skills",
+      rows: 5,
+      cols: 5,
+      grid: [
+        [
+          { type: "letter", letter: "C", number: 1 },
+          { type: "letter", letter: "O", number: 2 },
+          { type: "letter", letter: "D", number: 3 },
+          { type: "letter", letter: "E" },
+          { type: "blocked" },
+        ],
+        [
+          { type: "letter", letter: "O" },
+          { type: "blocked" },
+          { type: "letter", letter: "A" },
+          { type: "blocked" },
+          { type: "letter", letter: "J", number: 4 },
+        ],
+        [
+          { type: "letter", letter: "D", number: 5 },
+          { type: "letter", letter: "A" },
+          { type: "letter", letter: "T" },
+          { type: "letter", letter: "A" },
+          { type: "letter", letter: "O" },
+        ],
+        [
+          { type: "letter", letter: "E" },
+          { type: "blocked" },
+          { type: "letter", letter: "A" },
+          { type: "blocked" },
+          { type: "letter", letter: "B" },
+        ],
+        [
+          { type: "blocked" },
+          { type: "letter", letter: "A", number: 6 },
+          { type: "blocked" },
+          { type: "letter", letter: "T", number: 7 },
+          { type: "letter", letter: "E" },
+        ],
+      ],
+      clues: [
+        { number: 1, direction: "across", text: "What developers write", answer: "CODE", row: 0, col: 0 },
+        { number: 5, direction: "across", text: "Information to analyze", answer: "DATA", row: 2, col: 0 },
+        { number: 7, direction: "across", text: "Work collectively", answer: "TEAM", row: 4, col: 3 },
+        { number: 1, direction: "down", text: "What programmers do", answer: "CODE", row: 0, col: 0 },
+        { number: 2, direction: "down", text: "Information science abbreviation", answer: "DATA", row: 0, col: 1 },
+        { number: 3, direction: "down", text: "Information in spreadsheets", answer: "DATA", row: 0, col: 2 },
+        { number: 4, direction: "down", text: "Employment position", answer: "JOB", row: 1, col: 4 },
+        { number: 6, direction: "down", text: "Artificial intelligence (abbr.)", answer: "AI", row: 4, col: 1 },
+      ],
+      hint: "Think about what skills are essential in tech careers",
+      funFactTitle: "Did you know?",
+      funFactText: "Software developers are among the top 10 highest-paying careers in the US, with median salaries exceeding $120,000 annually.",
+      activeDate: new Date(),
+    },
+  ];
+
+  for (const crossword of sampleCrosswords) {
+    await prisma.crossword.upsert({
+      where: { id: crossword.id },
+      update: crossword,
+      create: crossword,
+    });
+    console.log(`  Upserted crossword: ${crossword.id}`);
+  }
+  console.log(`Seeded ${sampleCrosswords.length} sample crosswords`);
 }
 
 main()

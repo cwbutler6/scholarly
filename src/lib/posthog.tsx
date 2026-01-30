@@ -19,7 +19,13 @@ export type AnalyticsEvent =
   | { name: "chat_opened"; properties: Record<string, never> }
   | { name: "chat_message_sent"; properties: { messageLength: number } }
   | { name: "search_performed"; properties: { query: string; resultsCount?: number } }
-  | { name: "explore_filter_changed"; properties: { filterType: string; value: string } };
+  | { name: "explore_filter_changed"; properties: { filterType: string; value: string } }
+  | { name: "qotd_opened"; properties: { questionId: string } }
+  | { name: "qotd_answered"; properties: { questionId: string; selectedAnswer: number; isCorrect: boolean } }
+  | { name: "crossword_opened"; properties: { crosswordId: string } }
+  | { name: "crossword_hint_used"; properties: { crosswordId: string; hintsRemaining: number } }
+  | { name: "crossword_reset"; properties: { crosswordId: string } }
+  | { name: "crossword_completed"; properties: { crosswordId: string; hintsUsed: number; timeSpentSeconds?: number } };
 
 export function PostHogProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
