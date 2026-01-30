@@ -25,7 +25,8 @@ export type AnalyticsEvent =
   | { name: "crossword_opened"; properties: { crosswordId: string } }
   | { name: "crossword_hint_used"; properties: { crosswordId: string; hintsRemaining: number } }
   | { name: "crossword_reset"; properties: { crosswordId: string } }
-  | { name: "crossword_completed"; properties: { crosswordId: string; hintsUsed: number; timeSpentSeconds?: number } };
+  | { name: "crossword_completed"; properties: { crosswordId: string; hintsUsed: number; timeSpentSeconds?: number } }
+  | { name: "streak_modal_opened"; properties: { currentStreak: number } };
 
 export function PostHogProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {

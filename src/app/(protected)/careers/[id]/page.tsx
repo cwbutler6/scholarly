@@ -10,6 +10,7 @@ import {
 import { getCareerById, getRecommendedCareers } from "@/lib/careers";
 import { CareerList } from "@/components/career-list";
 import { ConvictionScore } from "./conviction-score";
+import { CareerTracker } from "./career-tracker";
 
 interface CareerPageProps {
   params: Promise<{ id: string }>;
@@ -64,6 +65,7 @@ export default async function CareerPage({
 
   return (
     <div className="bg-white">
+      <CareerTracker occupationId={career.id} />
       <div className="flex flex-col gap-4 bg-[#FE9900] px-4 py-6 md:gap-6 md:px-8 md:py-10 lg:px-[60px]">
         <Link
           href="/explore"

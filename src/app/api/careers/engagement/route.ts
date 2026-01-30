@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 
 /**
  * Track career page engagement (page views, time spent)
+ * Supports both JSON and sendBeacon (text/plain) requests
  */
 export async function POST(request: NextRequest) {
   const { userId: clerkId } = await auth();
@@ -13,7 +14,16 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const body = await request.json();
+    const contentType = request.headers.get("content-type") || "";
+    let body;
+
+    if (contentType.includes("text/plain")) {
+      const text = await request.text();
+      body = JSON.parse(text);
+    } else {
+      body = await request.json();
+    }
+
     const { occupationId, timeSpentSeconds } = body;
 
     if (!occupationId) {

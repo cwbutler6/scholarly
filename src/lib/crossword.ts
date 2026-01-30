@@ -74,7 +74,7 @@ export async function getTodaysCrossword(): Promise<CrosswordData | null> {
             where: { userId: user.id },
           },
         }
-      : false,
+      : undefined,
   });
 
   if (!crossword) {
@@ -86,15 +86,19 @@ export async function getTodaysCrossword(): Promise<CrosswordData | null> {
               where: { userId: user.id },
             },
           }
-        : false,
+        : undefined,
     });
   }
 
   if (!crossword) return null;
 
+  const crosswordWithProgress = crossword as typeof crossword & {
+    userProgress?: Array<{ userGrid: unknown; hintsUsed: number; completed: boolean; completedAt: Date | null }>;
+  };
+
   const progress =
-    user && crossword.userProgress && crossword.userProgress.length > 0
-      ? crossword.userProgress[0]
+    user && crosswordWithProgress.userProgress && crosswordWithProgress.userProgress.length > 0
+      ? crosswordWithProgress.userProgress[0]
       : null;
 
   return {
@@ -102,8 +106,8 @@ export async function getTodaysCrossword(): Promise<CrosswordData | null> {
     title: crossword.title,
     rows: crossword.rows,
     cols: crossword.cols,
-    grid: crossword.grid as GridCell[][],
-    clues: crossword.clues as Clue[],
+    grid: crossword.grid as unknown as GridCell[][],
+    clues: crossword.clues as unknown as Clue[],
     hint: crossword.hint,
     funFactTitle: crossword.funFactTitle,
     funFactText: crossword.funFactText,
@@ -180,7 +184,7 @@ export async function useCrosswordHint(
     };
   }
 
-  const grid = crossword.grid as GridCell[][];
+  const grid = crossword.grid as unknown as GridCell[][];
   const emptyCells: { row: number; col: number; letter: string }[] = [];
 
   for (let row = 0; row < grid.length; row++) {
@@ -258,7 +262,7 @@ export async function submitCrossword(
     };
   }
 
-  const grid = crossword.grid as GridCell[][];
+  const grid = crossword.grid as unknown as GridCell[][];
   let correctCells = 0;
   let totalCells = 0;
 
