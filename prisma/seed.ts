@@ -13,7 +13,22 @@ if (!connectionString) {
 const adapter = new PrismaNeon({ connectionString });
 const prisma = new PrismaClient({ adapter });
 
-const sampleOccupations = [
+const sampleOccupations: Array<{
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  education: string;
+  jobZone: number;
+  brightOutlook: boolean;
+  greenOccupation: boolean;
+  riasecRealistic: number;
+  riasecInvestigative: number;
+  riasecArtistic: number;
+  riasecSocial: number;
+  riasecEnterprising: number;
+  riasecConventional: number;
+}> = [
   {
     id: "15-1252.00",
     title: "Software Developers",
@@ -30,10 +45,6 @@ const sampleOccupations = [
     riasecSocial: 2,
     riasecEnterprising: 3,
     riasecConventional: 4,
-    medianWage: 85000,
-    medianWageHigh: 170000,
-    jobGrowth: "22",
-    totalEmployment: 1795300,
   },
   {
     id: "29-1141.00",
@@ -51,10 +62,6 @@ const sampleOccupations = [
     riasecSocial: 6,
     riasecEnterprising: 2,
     riasecConventional: 4,
-    medianWage: 65000,
-    medianWageHigh: 120000,
-    jobGrowth: "12",
-    totalEmployment: 3175390,
   },
   {
     id: "27-1024.00",
@@ -72,10 +79,6 @@ const sampleOccupations = [
     riasecSocial: 2,
     riasecEnterprising: 4,
     riasecConventional: 3,
-    medianWage: 45000,
-    medianWageHigh: 90000,
-    jobGrowth: "3",
-    totalEmployment: 264800,
   },
   {
     id: "25-2021.00",
@@ -93,10 +96,6 @@ const sampleOccupations = [
     riasecSocial: 6,
     riasecEnterprising: 3,
     riasecConventional: 3,
-    medianWage: 50000,
-    medianWageHigh: 85000,
-    jobGrowth: "4",
-    totalEmployment: 1395830,
   },
   {
     id: "11-1021.00",
@@ -114,10 +113,6 @@ const sampleOccupations = [
     riasecSocial: 4,
     riasecEnterprising: 6,
     riasecConventional: 4,
-    medianWage: 80000,
-    medianWageHigh: 150000,
-    jobGrowth: "8",
-    totalEmployment: 3011570,
   },
   {
     id: "47-2111.00",
@@ -135,10 +130,6 @@ const sampleOccupations = [
     riasecSocial: 2,
     riasecEnterprising: 3,
     riasecConventional: 3,
-    medianWage: 50000,
-    medianWageHigh: 100000,
-    jobGrowth: "11",
-    totalEmployment: 726200,
   },
 ];
 

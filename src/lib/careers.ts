@@ -756,6 +756,97 @@ export async function searchCareers(query: string): Promise<CareerWithMatch[]> {
   return careersWithImages;
 }
 
+export async function getRelatedCareers(
+  occupationId: string
+): Promise<CareerWithMatch[]> {
+  const user = await getOrCreateUser();
+
+  const [relatedOccupations, savedCareers, assessment] = await Promise.all([
+    db.occupationRelation.findMany({
+      where: { sourceId: occupationId },
+      include: {
+        target: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            imageUrl: true,
+            medianWage: true,
+            jobGrowth: true,
+            stemOccupation: true,
+            riasecRealistic: true,
+            riasecInvestigative: true,
+            riasecArtistic: true,
+            riasecSocial: true,
+            riasecEnterprising: true,
+            riasecConventional: true,
+          },
+        },
+      },
+      take: 6,
+    }),
+    user
+      ? db.savedCareer.findMany({
+          where: { userId: user.id },
+          select: { occupationId: true },
+        })
+      : [],
+    user
+      ? db.assessment.findFirst({
+          where: { userId: user.id },
+          orderBy: { createdAt: "desc" },
+        })
+      : null,
+  ]);
+
+  const savedIds = new Set(savedCareers.map((s) => s.occupationId));
+
+  const userScores = assessment
+    ? {
+        r: assessment.realistic,
+        i: assessment.investigative,
+        a: assessment.artistic,
+        s: assessment.social,
+        e: assessment.enterprising,
+        c: assessment.conventional,
+      }
+    : null;
+
+  const stemRelated = relatedOccupations.filter((r) => r.target.stemOccupation);
+
+  const careersWithImages = await Promise.all(
+    stemRelated.map(async (r) => {
+      const occ = r.target;
+      let imageUrl = occ.imageUrl;
+
+      if (!imageUrl) {
+        imageUrl = await getCareerImageUrl(occ.title);
+        if (imageUrl) {
+          db.occupation
+            .update({
+              where: { id: occ.id },
+              data: { imageUrl },
+            })
+            .catch(() => {});
+        }
+      }
+
+      return {
+        id: occ.id,
+        title: occ.title,
+        description: occ.description,
+        imageUrl,
+        matchPercent: calculateMatch(userScores, occ),
+        salary: formatSalary(occ.medianWage),
+        growth: occ.jobGrowth,
+        isSaved: savedIds.has(occ.id),
+      };
+    })
+  );
+
+  return careersWithImages;
+}
+
 export async function getCareerById(id: string): Promise<CareerDetail | null> {
   const user = await getOrCreateUser();
 
@@ -784,7 +875,15 @@ export async function getCareerById(id: string): Promise<CareerDetail | null> {
         : null,
       db.occupationRelation.findMany({
         where: { sourceId: id },
-        include: { target: { select: { id: true, title: true } } },
+        include: {
+          target: {
+            select: {
+              id: true,
+              title: true,
+              stemOccupation: true,
+            },
+          },
+        },
         take: 6,
       }),
     ]);
@@ -854,9 +953,11 @@ export async function getCareerById(id: string): Promise<CareerDetail | null> {
       name: t.name,
       isHot: t.hotTechnology,
     })),
-    relatedCareers: relatedOccupations.map((r) => ({
-      id: r.target.id,
-      title: r.target.title,
-    })),
+    relatedCareers: relatedOccupations
+      .filter((r) => r.target.stemOccupation)
+      .map((r) => ({
+        id: r.target.id,
+        title: r.target.title,
+      })),
   };
 }

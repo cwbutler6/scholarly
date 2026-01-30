@@ -7,7 +7,7 @@ import {
   GraduationCap,
   Zap,
 } from "lucide-react";
-import { getCareerById, getRecommendedCareers } from "@/lib/careers";
+import { getCareerById, getRecommendedCareers, getRelatedCareers } from "@/lib/careers";
 import { CareerList } from "@/components/career-list";
 import { ConvictionScore } from "./conviction-score";
 import { CareerTracker } from "./career-tracker";
@@ -25,20 +25,20 @@ export default async function CareerPage({
   const { from } = await searchParams;
   const fromSource =
     from === "dashboard" || from === "explore" ? from : undefined;
-  const [career, fallbackCareers] = await Promise.all([
-    getCareerById(id),
-    getRecommendedCareers(10),
-  ]);
+  const career = await getCareerById(id);
 
   if (!career) {
     notFound();
   }
 
+  const [relatedCareersData, fallbackCareers] = await Promise.all([
+    getRelatedCareers(id),
+    getRecommendedCareers(10),
+  ]);
+
   const relatedCareers =
-    career.relatedCareers.length > 0
-      ? fallbackCareers.filter((c) =>
-          career.relatedCareers.some((r) => r.id === c.id)
-        )
+    relatedCareersData.length > 0
+      ? relatedCareersData
       : fallbackCareers.filter((c) => c.id !== career.id);
 
   const salaryDisplay =
@@ -308,7 +308,7 @@ export default async function CareerPage({
 
         <section className="mt-12">
           <h2 className="mb-6 text-2xl font-bold text-gray-900">
-            {career.relatedCareers.length > 0
+            {relatedCareersData.length > 0
               ? "Related Careers"
               : "Recommended Careers"}
           </h2>
