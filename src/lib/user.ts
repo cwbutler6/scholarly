@@ -3,7 +3,7 @@ import { db } from "./db";
 
 /**
  * Gets or creates the database user for the current Clerk session.
- * Uses just-in-time sync for immediate, reliable user creation.
+ * Uses upsert to handle race conditions when multiple requests arrive simultaneously.
  */
 export async function getOrCreateUser() {
   const clerkUser = await currentUser();
@@ -12,22 +12,20 @@ export async function getOrCreateUser() {
     return null;
   }
 
-  const existingUser = await db.user.findUnique({
-    where: { clerkId: clerkUser.id },
-  });
-
-  if (existingUser) {
-    return existingUser;
-  }
-
   const primaryEmail = clerkUser.emailAddresses[0]?.emailAddress;
 
   if (!primaryEmail) {
     throw new Error("User has no email address");
   }
 
-  return db.user.create({
-    data: {
+  return db.user.upsert({
+    where: { clerkId: clerkUser.id },
+    update: {
+      email: primaryEmail,
+      firstName: clerkUser.firstName,
+      lastName: clerkUser.lastName,
+    },
+    create: {
       clerkId: clerkUser.id,
       email: primaryEmail,
       firstName: clerkUser.firstName,
