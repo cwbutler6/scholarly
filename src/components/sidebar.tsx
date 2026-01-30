@@ -13,11 +13,11 @@ import {
 } from "@/components/icons/nav-icons";
 
 const navItems = [
-  { href: "/dashboard", icon: DashboardIcon, label: "Dashboard", key: "dashboard" },
-  { href: "/explore", icon: ExploreIcon, label: "Explore", key: "explore" },
-  { href: "/chat", icon: ChatIcon, label: "Chat", key: "chat" },
-  { href: "/learn", icon: LearnIcon, label: "Learn", key: "learn" },
-  { href: "/saved", icon: SavedIcon, label: "Saved", key: "saved" },
+  { href: "/dashboard", icon: DashboardIcon, label: "Dashboard", key: "dashboard", disabled: false },
+  { href: "/explore", icon: ExploreIcon, label: "Explore", key: "explore", disabled: false },
+  { href: "/chat", icon: ChatIcon, label: "Chat", key: "chat", disabled: false },
+  { href: "/learn", icon: LearnIcon, label: "Learn", key: "learn", disabled: true },
+  { href: "/saved", icon: SavedIcon, label: "Saved", key: "saved", disabled: true },
 ];
 
 interface SidebarProps {
@@ -32,7 +32,7 @@ export function Sidebar({ userInitials, userImageUrl }: SidebarProps) {
   const isOnCareerPage = pathname.startsWith("/careers/");
 
   return (
-    <aside className="fixed left-0 top-0 z-40 hidden h-screen w-16 flex-col items-center border-r bg-white py-6 md:flex">
+    <aside className="fixed left-0 top-0 z-40 hidden h-screen w-16 flex-col items-center bg-white py-6 md:flex">
       <nav className="flex flex-1 flex-col items-center justify-center gap-2">
         {navItems.map((item) => {
           const isActive =
@@ -40,6 +40,19 @@ export function Sidebar({ userInitials, userImageUrl }: SidebarProps) {
             pathname.startsWith(item.href + "/") ||
             (isOnCareerPage && fromParam === item.key);
           const Icon = item.icon;
+
+          if (item.disabled) {
+            return (
+              <div
+                key={item.href}
+                className="flex h-10 w-10 cursor-not-allowed items-center justify-center rounded-xl text-[#D4D4D4]"
+                title={`${item.label} (Coming Soon)`}
+              >
+                <Icon />
+              </div>
+            );
+          }
+
           return (
             <Link
               key={item.href}

@@ -475,24 +475,50 @@ export async function getConvictionBreakdown(
 export async function getRecommendedCareers(limit = 10): Promise<CareerWithMatch[]> {
   const user = await getOrCreateUser();
 
-  const [occupations, savedCareers, assessment] = await Promise.all([
-    db.occupation.findMany({
-      take: limit * 3,
-      orderBy: [{ brightOutlook: "desc" }, { medianWage: "desc" }],
-    }),
-    user
-      ? db.savedCareer.findMany({
-          where: { userId: user.id },
-          select: { occupationId: true },
-        })
-      : [],
-    user
-      ? db.assessment.findFirst({
-          where: { userId: user.id },
-          orderBy: { createdAt: "desc" },
-        })
-      : null,
-  ]);
+  const [allOccupations, savedCareers, assessment, userSkills, userInterests] =
+    await Promise.all([
+      db.occupation.findMany({
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          imageUrl: true,
+          medianWage: true,
+          jobGrowth: true,
+          brightOutlook: true,
+          riasecRealistic: true,
+          riasecInvestigative: true,
+          riasecArtistic: true,
+          riasecSocial: true,
+          riasecEnterprising: true,
+          riasecConventional: true,
+          majorGroup: true,
+        },
+      }),
+      user
+        ? db.savedCareer.findMany({
+            where: { userId: user.id },
+            select: { occupationId: true },
+          })
+        : [],
+      user
+        ? db.assessment.findFirst({
+            where: { userId: user.id },
+            orderBy: { createdAt: "desc" },
+          })
+        : null,
+      user
+        ? db.userSkill.findMany({
+            where: { userId: user.id },
+            include: { skill: true },
+          })
+        : [],
+      user
+        ? db.userInterest.findMany({
+            where: { userId: user.id },
+          })
+        : [],
+    ]);
 
   const savedIds = new Set(savedCareers.map((s) => s.occupationId));
 
@@ -507,13 +533,99 @@ export async function getRecommendedCareers(limit = 10): Promise<CareerWithMatch
       }
     : null;
 
-  const careersWithMatch = occupations.map((occ) => ({
-    occ,
-    matchPercent: calculateMatch(userScores, occ),
-  }));
+  const hasAssessment = assessment !== null;
+  const hasSkills = userSkills.length > 0;
+  const hasInterests = userInterests.length > 0;
 
-  careersWithMatch.sort((a, b) => b.matchPercent - a.matchPercent);
-  const topCareers = careersWithMatch.slice(0, limit);
+  const occupationSkillsMap: Map<string, string[]> = new Map();
+  if (hasSkills) {
+    const allOccupationSkills = await db.occupationSkill.findMany({
+      select: { occupationId: true, name: true },
+    });
+    for (const skill of allOccupationSkills) {
+      const existing = occupationSkillsMap.get(skill.occupationId) || [];
+      existing.push(skill.name.toLowerCase());
+      occupationSkillsMap.set(skill.occupationId, existing);
+    }
+  }
+
+  const userSkillNames = new Set(
+    userSkills.map((us) => us.skill.name.toLowerCase())
+  );
+  const userInterestNames = new Set(
+    userInterests.map((ui) => ui.name.toLowerCase())
+  );
+
+  const scoredOccupations = allOccupations.map((occ) => {
+    let totalScore = 0;
+    let maxPossibleScore = 0;
+
+    if (hasAssessment) {
+      maxPossibleScore += 40;
+      const riasecMatch = calculateMatch(userScores, occ);
+      totalScore += (riasecMatch / 100) * 40;
+    }
+
+    if (hasSkills) {
+      maxPossibleScore += 35;
+      const occSkills = occupationSkillsMap.get(occ.id) || [];
+      if (occSkills.length > 0) {
+        let matchCount = 0;
+        for (const skill of occSkills) {
+          if (userSkillNames.has(skill)) {
+            matchCount++;
+          }
+        }
+        const skillMatchPercent = matchCount / occSkills.length;
+        totalScore += skillMatchPercent * 35;
+      }
+    }
+
+    if (hasInterests) {
+      maxPossibleScore += 15;
+      const titleLower = occ.title.toLowerCase();
+      const descLower = (occ.description || "").toLowerCase();
+      const majorGroupLower = (occ.majorGroup || "").toLowerCase();
+      let interestMatchCount = 0;
+      for (const interest of userInterestNames) {
+        if (
+          titleLower.includes(interest) ||
+          descLower.includes(interest) ||
+          majorGroupLower.includes(interest)
+        ) {
+          interestMatchCount++;
+        }
+      }
+      if (userInterestNames.size > 0) {
+        const interestMatchPercent = Math.min(
+          interestMatchCount / userInterestNames.size,
+          1
+        );
+        totalScore += interestMatchPercent * 15;
+      }
+    }
+
+    maxPossibleScore += 10;
+    if (occ.brightOutlook) {
+      totalScore += 5;
+    }
+    if (occ.medianWage && occ.medianWage > 50000) {
+      totalScore += 5;
+    }
+
+    const finalScore =
+      maxPossibleScore > 0
+        ? Math.round((totalScore / maxPossibleScore) * 100)
+        : 50 + Math.floor(Math.random() * 20);
+
+    return {
+      occ,
+      matchPercent: Math.min(finalScore, 99),
+    };
+  });
+
+  scoredOccupations.sort((a, b) => b.matchPercent - a.matchPercent);
+  const topCareers = scoredOccupations.slice(0, limit);
 
   const careersWithImages = await Promise.all(
     topCareers.map(async ({ occ, matchPercent }) => {
