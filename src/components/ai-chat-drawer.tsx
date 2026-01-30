@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { useChat } from "@ai-sdk/react";
+import { useEffect } from "react";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import { ArrowRight, ArrowUp, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAiChatLogic } from "@/hooks/use-ai-chat";
 
 interface AiChatDrawerProps {
   isOpen: boolean;
@@ -17,91 +17,26 @@ const suggestionPrompts = [
   "How can I improve my career match score?",
 ];
 
-const STORAGE_KEY = "ai-chat-messages";
-
 export function AiChatDrawer({ isOpen, onClose }: AiChatDrawerProps) {
-  const [inputValue, setInputValue] = useState("");
-  const [isHydrated, setIsHydrated] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
-
-  const { messages, sendMessage, status, setMessages } = useChat({
-    api: "/api/chat",
-  });
-
-  const isLoading = status === "streaming" || status === "submitted";
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        setMessages(parsed);
-      } catch {
-        localStorage.removeItem(STORAGE_KEY);
-      }
-    }
-    setIsHydrated(true);
-  }, [setMessages]);
-
-  useEffect(() => {
-    if (isHydrated && messages.length > 0) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
-    }
-  }, [messages, isHydrated]);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+  const {
+    messages,
+    inputValue,
+    setInputValue,
+    isLoading,
+    messagesEndRef,
+    inputRef,
+    handleSubmit,
+    handleSuggestionClick,
+    handleClearChat,
+    handleKeyDown,
+    getTextContent,
+  } = useAiChatLogic();
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
       inputRef.current.focus();
     }
-  }, [isOpen]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputValue.trim() || isLoading) return;
-
-    const message = inputValue.trim();
-    setInputValue("");
-    if (inputRef.current) {
-      inputRef.current.style.height = "auto";
-    }
-    await sendMessage({ text: message });
-  };
-
-  const handleSuggestionClick = async (prompt: string) => {
-    await sendMessage({ text: prompt });
-  };
-
-  const handleClearChat = () => {
-    setMessages([]);
-    localStorage.removeItem(STORAGE_KEY);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSubmit(e);
-    }
-  };
-
-  const adjustTextareaHeight = () => {
-    if (inputRef.current) {
-      inputRef.current.style.height = "auto";
-      inputRef.current.style.height = `${Math.min(inputRef.current.scrollHeight, 150)}px`;
-    }
-  };
-
-  useEffect(() => {
-    adjustTextareaHeight();
-  }, [inputValue]);
+  }, [isOpen, inputRef]);
 
   return (
     <>
@@ -168,10 +103,7 @@ export function AiChatDrawer({ isOpen, onClose }: AiChatDrawerProps) {
           ) : (
             <div className="space-y-6">
               {messages.map((message) => {
-                const textContent = message.parts
-                  ?.filter((part): part is { type: "text"; text: string } => part.type === "text")
-                  .map((part) => part.text)
-                  .join("") || "";
+                const textContent = getTextContent(message);
 
                 if (!textContent) return null;
 
