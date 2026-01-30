@@ -41,6 +41,7 @@ model User {
   careerEngagements  CareerEngagement[]
   questionAnswers    QuestionAnswer[]
   crosswordProgress  CrosswordProgress[]
+  events             Event[]
 
   @@map("users")
 }
@@ -468,4 +469,21 @@ model CrosswordProgress {
 
   @@unique([crosswordId, userId])
   @@map("crossword_progress")
+}
+
+/// User activity events for AI context and analytics
+model Event {
+  id           String   @id @default(cuid())
+  userId       String   @map("user_id")
+  type         String
+  careerId     String?  @map("career_id")
+  metadata     Json?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([userId, type])
+  @@index([userId, careerId])
+  @@map("events")
 }

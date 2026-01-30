@@ -3,7 +3,7 @@
 import posthog from "posthog-js";
 import { PostHogProvider as PHProvider, usePostHog } from "posthog-js/react";
 import { useUser } from "@clerk/nextjs";
-import { useEffect, Suspense, useCallback } from "react";
+import { useEffect, Suspense, useCallback, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 
 export type AnalyticsEvent =
@@ -28,6 +28,15 @@ export type AnalyticsEvent =
   | { name: "crossword_reset"; properties: { crosswordId: string } }
   | { name: "crossword_completed"; properties: { crosswordId: string; hintsUsed: number; timeSpentSeconds?: number } }
   | { name: "streak_modal_opened"; properties: { currentStreak: number } };
+
+interface InternalEvent {
+  type: string;
+  careerId?: string;
+  metadata?: Record<string, unknown>;
+}
+
+const EVENT_BATCH_SIZE = 10;
+const EVENT_FLUSH_INTERVAL_MS = 5000;
 
 export function PostHogProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -103,8 +112,84 @@ export function PostHogPageview() {
   );
 }
 
+function extractCareerIdFromProperties(
+  properties: Record<string, unknown>
+): string | undefined {
+  if (typeof properties.careerId === "string") {
+    return properties.careerId;
+  }
+  return undefined;
+}
+
+async function flushEventsToServer(events: InternalEvent[]) {
+  if (events.length === 0) return;
+
+  try {
+    const response = await fetch("/api/events", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(events),
+    });
+
+    if (!response.ok) {
+      console.warn("Failed to flush events to server:", response.status);
+    }
+  } catch (error) {
+    console.warn("Failed to flush events to server:", error);
+  }
+}
+
 export function useAnalytics() {
   const ph = usePostHog();
+  const eventQueueRef = useRef<InternalEvent[]>([]);
+  const flushTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const flushEvents = useCallback(() => {
+    if (eventQueueRef.current.length > 0) {
+      const eventsToFlush = [...eventQueueRef.current];
+      eventQueueRef.current = [];
+      flushEventsToServer(eventsToFlush);
+    }
+    if (flushTimeoutRef.current) {
+      clearTimeout(flushTimeoutRef.current);
+      flushTimeoutRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (eventQueueRef.current.length > 0) {
+        const eventsToFlush = [...eventQueueRef.current];
+        eventQueueRef.current = [];
+        navigator.sendBeacon(
+          "/api/events",
+          JSON.stringify(eventsToFlush)
+        );
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      if (flushTimeoutRef.current) {
+        clearTimeout(flushTimeoutRef.current);
+      }
+      flushEvents();
+    };
+  }, [flushEvents]);
+
+  const queueInternalEvent = useCallback(
+    (event: InternalEvent) => {
+      eventQueueRef.current.push(event);
+
+      if (eventQueueRef.current.length >= EVENT_BATCH_SIZE) {
+        flushEvents();
+      } else if (!flushTimeoutRef.current) {
+        flushTimeoutRef.current = setTimeout(flushEvents, EVENT_FLUSH_INTERVAL_MS);
+      }
+    },
+    [flushEvents]
+  );
 
   const track = useCallback(
     <T extends AnalyticsEvent["name"]>(
@@ -114,8 +199,17 @@ export function useAnalytics() {
       if (ph) {
         ph.capture(eventName, properties);
       }
+
+      const careerId = extractCareerIdFromProperties(
+        properties as Record<string, unknown>
+      );
+      queueInternalEvent({
+        type: eventName,
+        careerId,
+        metadata: properties as Record<string, unknown>,
+      });
     },
-    [ph]
+    [ph, queueInternalEvent]
   );
 
   const setUserProperties = useCallback(

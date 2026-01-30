@@ -18,6 +18,7 @@ When helping students:
 - Provide actionable next steps
 - When discussing a specific career, use getCareerDetails to provide accurate information
 - When a student asks how ready they are for a career, use getConvictionScore to give personalized feedback
+- Use getRecentActivity to understand what the student has been exploring and tailor your advice accordingly
 
 The conviction score (0-100) measures how prepared a student is for a specific career based on:
 - RIASEC personality match (30%) - how their interests align
@@ -30,6 +31,7 @@ IMPORTANT - Be proactive:
 - After showing results, use searchCareers to suggest 3-5 specific careers that match their top RIASEC types
 - Always follow up with actionable guidance - never leave the student hanging
 - If a student seems unsure what to do next, take initiative and guide them
+- Reference the student's recent activity when giving advice (e.g., "I see you've been exploring software careers...")
 
 If a student hasn't completed their RIASEC assessment, encourage them to do so.`;
 
@@ -409,6 +411,73 @@ export async function POST(req: Request) {
                   : totalScore >= 40
                     ? "This career is a possibility. Focus on developing matching skills and exploring more."
                     : "This may be a stretch goal. Consider building foundational skills first.",
+          };
+        },
+      },
+
+      getRecentActivity: {
+        description:
+          "Get the user's recent activity to understand their exploration patterns and provide personalized guidance",
+        inputSchema: z.object({
+          limit: z
+            .number()
+            .optional()
+            .default(20)
+            .describe("Number of recent events to retrieve"),
+        }),
+        execute: async ({ limit }: { limit?: number }) => {
+          const user = await db.user.findUnique({
+            where: { clerkId: userId },
+            select: { id: true },
+          });
+
+          if (!user) {
+            return { message: "User not found" };
+          }
+
+          const events = await db.event.findMany({
+            where: { userId: user.id },
+            orderBy: { createdAt: "desc" },
+            take: limit ?? 20,
+            select: {
+              type: true,
+              careerId: true,
+              metadata: true,
+              createdAt: true,
+            },
+          });
+
+          const careerIds = [
+            ...new Set(events.filter((e) => e.careerId).map((e) => e.careerId)),
+          ] as string[];
+
+          const careers =
+            careerIds.length > 0
+              ? await db.occupation.findMany({
+                  where: { id: { in: careerIds } },
+                  select: { id: true, title: true },
+                })
+              : [];
+
+          const careerMap = new Map(careers.map((c) => [c.id, c.title]));
+
+          return {
+            recentEvents: events.map((e) => ({
+              type: e.type,
+              careerTitle: e.careerId ? careerMap.get(e.careerId) : null,
+              timestamp: e.createdAt,
+              details: e.metadata,
+            })),
+            summary: {
+              totalEvents: events.length,
+              uniqueCareersViewed: new Set(
+                events.filter((e) => e.type === "career_viewed").map((e) => e.careerId)
+              ).size,
+              chatMessages: events.filter((e) => e.type === "chat_message_sent").length,
+              assessmentActivity: events.some(
+                (e) => e.type === "assessment_completed" || e.type === "assessment_started"
+              ),
+            },
           };
         },
       },
