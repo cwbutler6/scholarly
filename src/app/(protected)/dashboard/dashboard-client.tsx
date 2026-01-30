@@ -90,8 +90,6 @@ export function DashboardQOTDCard({
     return result;
   };
 
-  const hasAnswered = currentQuestion?.userAnswer != null;
-
   return (
     <>
       <button
@@ -101,11 +99,6 @@ export function DashboardQOTDCard({
       >
         <span className="text-sm text-gray-500">Today&apos;s</span>
         <span className="text-xl font-bold text-gray-900">Question</span>
-        {hasAnswered && (
-          <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
-            ✓ Completed
-          </span>
-        )}
         {!currentQuestion && (
           <span className="mt-2 text-xs text-gray-400">
             No question available
@@ -169,8 +162,6 @@ export function DashboardChallengeCard({
     );
   };
 
-  const isCompleted = currentCrossword?.userProgress?.completed || false;
-
   return (
     <>
       <button
@@ -180,11 +171,6 @@ export function DashboardChallengeCard({
       >
         <span className="text-sm text-gray-500">Today&apos;s</span>
         <span className="text-xl font-bold text-gray-900">Challenge</span>
-        {isCompleted && (
-          <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
-            ✓ Completed
-          </span>
-        )}
         {!currentCrossword && (
           <span className="mt-2 text-xs text-gray-400">
             No challenge available
