@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { UserButton } from "@clerk/nextjs";
 import {
   DashboardIcon,
   ExploreIcon,
@@ -20,7 +20,12 @@ const navItems = [
   { href: "/saved", icon: SavedIcon, label: "Saved", key: "saved" },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  userInitials: string;
+  userImageUrl: string | null;
+}
+
+export function Sidebar({ userInitials, userImageUrl }: SidebarProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const fromParam = searchParams.get("from");
@@ -52,15 +57,29 @@ export function Sidebar() {
           );
         })}
 
-        <div className="mt-4">
-          <UserButton
-            appearance={{
-              elements: {
-                avatarBox: "h-10 w-10 ring-2 ring-[#FE9900] ring-offset-2",
-              },
-            }}
-          />
-        </div>
+        <Link
+          href="/profile"
+          className="mt-4"
+          title="Profile"
+        >
+          <div
+            className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full ring-[3px] ring-[#FE9900]"
+          >
+            {userImageUrl ? (
+              <Image
+                src={userImageUrl}
+                alt="Profile"
+                width={32}
+                height={32}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 text-xs font-bold text-white">
+                {userInitials}
+              </div>
+            )}
+          </div>
+        </Link>
       </nav>
     </aside>
   );

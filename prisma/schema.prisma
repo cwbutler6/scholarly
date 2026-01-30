@@ -10,20 +10,28 @@ datasource db {
 
 /// User profile linked to Clerk authentication
 model User {
-  id                 String   @id @default(cuid())
-  clerkId            String   @unique @map("clerk_id")
-  email              String   @unique
-  firstName          String?  @map("first_name")
-  lastName           String?  @map("last_name")
+  id                 String    @id @default(cuid())
+  clerkId            String    @unique @map("clerk_id")
+  email              String    @unique
+  firstName          String?   @map("first_name")
+  lastName           String?   @map("last_name")
   grade              Int?
-  schoolId           String?  @map("school_id")
-  onboardingComplete Boolean  @default(false) @map("onboarding_complete")
-  createdAt          DateTime @default(now()) @map("created_at")
-  updatedAt          DateTime @updatedAt @map("updated_at")
+  schoolId           String?   @map("school_id")
+  onboardingComplete Boolean   @default(false) @map("onboarding_complete")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  bio            String?
+  location       String?
+  dateOfBirth    DateTime? @map("date_of_birth")
+  accountType    String?   @default("high_school") @map("account_type")
+  graduationYear Int?      @map("graduation_year")
 
   assessments    Assessment[]
   savedCareers   SavedCareer[]
   chatSessions   ChatSession[]
+  userSkills     UserSkill[]
+  userInterests  UserInterest[]
 
   @@map("users")
 }
@@ -152,4 +160,41 @@ model ChatMessage {
   session ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@map("chat_messages")
+}
+
+/// Master list of skills (seeded from O*NET + curated tech skills)
+model Skill {
+  id       String @id @default(cuid())
+  name     String @unique
+  category String
+
+  userSkills UserSkill[]
+
+  @@map("skills")
+}
+
+/// Junction table linking users to skills with proficiency
+model UserSkill {
+  id          String @id @default(cuid())
+  userId      String @map("user_id")
+  skillId     String @map("skill_id")
+  proficiency Int    @default(50)
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, skillId])
+  @@map("user_skills")
+}
+
+/// User interests (free-form text)
+model UserInterest {
+  id     String @id @default(cuid())
+  userId String @map("user_id")
+  name   String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, name])
+  @@map("user_interests")
 }

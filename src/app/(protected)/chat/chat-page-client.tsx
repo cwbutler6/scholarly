@@ -1,10 +1,12 @@
 "use client";
 
-import Image from "next/image";
+import { useMemo } from "react";
 import ReactMarkdown from "react-markdown";
+import Image from "next/image";
 import { ArrowUp, Lightbulb, TrendingUp, MessageCircle, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAiChatLogic } from "@/hooks/use-ai-chat";
+import { useSetHeaderActions } from "@/components/header";
 
 interface ChatPageClientProps {
   firstName: string;
@@ -34,6 +36,18 @@ const suggestionCards = [
   },
 ];
 
+function NewChatButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="flex items-center gap-2 rounded-full bg-gray-100 px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-200"
+    >
+      <RotateCcw className="h-4 w-4" />
+      New Chat
+    </button>
+  );
+}
+
 export function ChatPageClient({ firstName }: ChatPageClientProps) {
   const {
     messages,
@@ -49,27 +63,15 @@ export function ChatPageClient({ firstName }: ChatPageClientProps) {
     getTextContent,
   } = useAiChatLogic();
 
-  return (
-    <div className="flex h-screen flex-col bg-white">
-      <header className="flex shrink-0 items-center justify-between bg-white px-6 py-3">
-        <Image
-          src="/images/logo-scholarly-full.png"
-          alt="Scholarly"
-          width={115}
-          height={37}
-          className="h-auto w-auto"
-        />
-        {messages.length > 0 && (
-          <button
-            onClick={handleClearChat}
-            className="flex items-center gap-2 rounded-full bg-gray-100 px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-200"
-          >
-            <RotateCcw className="h-4 w-4" />
-            New Chat
-          </button>
-        )}
-      </header>
+  const headerActions = useMemo(
+    () =>
+      messages.length > 0 ? <NewChatButton onClick={handleClearChat} /> : null,
+    [messages.length, handleClearChat]
+  );
+  useSetHeaderActions(headerActions);
 
+  return (
+    <div className="flex h-full flex-col bg-white">
       <div className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto px-6 py-12">
         {messages.length === 0 ? (
           <div className="flex w-full max-w-3xl flex-col items-center">

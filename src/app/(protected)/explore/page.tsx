@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { getRecommendedCareers } from "@/lib/careers";
 import { CareerList } from "@/components/career-list";
-import { AiChatButton } from "@/components/ai-chat-button";
 
 const realStories = [
   {
@@ -26,18 +25,7 @@ export default async function ExplorePage() {
   const careers = await getRecommendedCareers(10);
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-white">
-      <header className="flex items-center justify-between bg-white px-6 py-0">
-        <Image
-          src="/images/logo-scholarly-full.png"
-          alt="Scholarly"
-          width={115}
-          height={37}
-          className="h-auto w-auto"
-        />
-        <AiChatButton />
-      </header>
-
+    <div className="bg-white">
       <div className="px-6 py-4">
         <section className="mb-12">
           <h1 className="mb-2 text-3xl font-bold text-gray-900">

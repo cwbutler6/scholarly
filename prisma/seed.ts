@@ -178,9 +178,158 @@ const occupationAbilities: Record<string, string[]> = {
   "47-2111.00": ["Electrical Inspection", "Load Calculation", "System Upgrade", "Preventive Maintenance", "Equipment Installation", "Wiring Diagnosis", "Energy Efficiency", "Project Estimation", "Permit Acquisition"],
 };
 
+const masterSkills: { name: string; category: string }[] = [
+  // O*NET Basic Skills
+  { name: "Active Learning", category: "onet_skill" },
+  { name: "Active Listening", category: "onet_skill" },
+  { name: "Critical Thinking", category: "onet_skill" },
+  { name: "Learning Strategies", category: "onet_skill" },
+  { name: "Mathematics", category: "onet_skill" },
+  { name: "Monitoring", category: "onet_skill" },
+  { name: "Reading Comprehension", category: "onet_skill" },
+  { name: "Science", category: "onet_skill" },
+  { name: "Speaking", category: "onet_skill" },
+  { name: "Writing", category: "onet_skill" },
+
+  // O*NET Social Skills
+  { name: "Coordination", category: "onet_skill" },
+  { name: "Instructing", category: "onet_skill" },
+  { name: "Negotiation", category: "onet_skill" },
+  { name: "Persuasion", category: "onet_skill" },
+  { name: "Service Orientation", category: "onet_skill" },
+  { name: "Social Perceptiveness", category: "onet_skill" },
+
+  // O*NET Complex Problem Solving Skills
+  { name: "Complex Problem Solving", category: "onet_skill" },
+
+  // O*NET Technical Skills
+  { name: "Equipment Maintenance", category: "onet_skill" },
+  { name: "Equipment Selection", category: "onet_skill" },
+  { name: "Installation", category: "onet_skill" },
+  { name: "Operation and Control", category: "onet_skill" },
+  { name: "Operations Analysis", category: "onet_skill" },
+  { name: "Operations Monitoring", category: "onet_skill" },
+  { name: "Programming", category: "onet_skill" },
+  { name: "Quality Control Analysis", category: "onet_skill" },
+  { name: "Repairing", category: "onet_skill" },
+  { name: "Technology Design", category: "onet_skill" },
+  { name: "Troubleshooting", category: "onet_skill" },
+
+  // O*NET Systems Skills
+  { name: "Judgment and Decision Making", category: "onet_skill" },
+  { name: "Systems Analysis", category: "onet_skill" },
+  { name: "Systems Evaluation", category: "onet_skill" },
+
+  // O*NET Resource Management Skills
+  { name: "Management of Financial Resources", category: "onet_skill" },
+  { name: "Management of Material Resources", category: "onet_skill" },
+  { name: "Management of Personnel Resources", category: "onet_skill" },
+  { name: "Time Management", category: "onet_skill" },
+
+  // O*NET Knowledge Areas
+  { name: "Administration and Management", category: "onet_knowledge" },
+  { name: "Biology", category: "onet_knowledge" },
+  { name: "Building and Construction", category: "onet_knowledge" },
+  { name: "Chemistry", category: "onet_knowledge" },
+  { name: "Clerical", category: "onet_knowledge" },
+  { name: "Communications and Media", category: "onet_knowledge" },
+  { name: "Computers and Electronics", category: "onet_knowledge" },
+  { name: "Customer and Personal Service", category: "onet_knowledge" },
+  { name: "Design", category: "onet_knowledge" },
+  { name: "Economics and Accounting", category: "onet_knowledge" },
+  { name: "Education and Training", category: "onet_knowledge" },
+  { name: "Engineering and Technology", category: "onet_knowledge" },
+  { name: "English Language", category: "onet_knowledge" },
+  { name: "Fine Arts", category: "onet_knowledge" },
+  { name: "Food Production", category: "onet_knowledge" },
+  { name: "Foreign Language", category: "onet_knowledge" },
+  { name: "Geography", category: "onet_knowledge" },
+  { name: "History and Archeology", category: "onet_knowledge" },
+  { name: "Law and Government", category: "onet_knowledge" },
+  { name: "Mathematics Knowledge", category: "onet_knowledge" },
+  { name: "Mechanical", category: "onet_knowledge" },
+  { name: "Medicine and Dentistry", category: "onet_knowledge" },
+  { name: "Personnel and Human Resources", category: "onet_knowledge" },
+  { name: "Philosophy and Theology", category: "onet_knowledge" },
+  { name: "Physics", category: "onet_knowledge" },
+  { name: "Production and Processing", category: "onet_knowledge" },
+  { name: "Psychology", category: "onet_knowledge" },
+  { name: "Public Safety and Security", category: "onet_knowledge" },
+  { name: "Sales and Marketing", category: "onet_knowledge" },
+  { name: "Sociology and Anthropology", category: "onet_knowledge" },
+  { name: "Telecommunications", category: "onet_knowledge" },
+  { name: "Therapy and Counseling", category: "onet_knowledge" },
+  { name: "Transportation", category: "onet_knowledge" },
+
+  // Programming Languages (curated)
+  { name: "JavaScript", category: "programming" },
+  { name: "TypeScript", category: "programming" },
+  { name: "Python", category: "programming" },
+  { name: "Java", category: "programming" },
+  { name: "C++", category: "programming" },
+  { name: "C#", category: "programming" },
+  { name: "Go", category: "programming" },
+  { name: "Rust", category: "programming" },
+  { name: "Swift", category: "programming" },
+  { name: "Kotlin", category: "programming" },
+  { name: "Ruby", category: "programming" },
+  { name: "PHP", category: "programming" },
+  { name: "R", category: "programming" },
+  { name: "SQL", category: "programming" },
+  { name: "HTML/CSS", category: "programming" },
+
+  // Tools (curated)
+  { name: "Git", category: "tools" },
+  { name: "Docker", category: "tools" },
+  { name: "Kubernetes", category: "tools" },
+  { name: "AWS", category: "tools" },
+  { name: "Google Cloud", category: "tools" },
+  { name: "Azure", category: "tools" },
+  { name: "VS Code", category: "tools" },
+  { name: "Figma", category: "tools" },
+  { name: "Adobe Creative Suite", category: "tools" },
+  { name: "Slack", category: "tools" },
+  { name: "Jira", category: "tools" },
+  { name: "Notion", category: "tools" },
+  { name: "GitHub", category: "tools" },
+  { name: "Postman", category: "tools" },
+  { name: "Tableau", category: "tools" },
+  { name: "Excel", category: "tools" },
+  { name: "Power BI", category: "tools" },
+
+  // Frameworks (curated)
+  { name: "React", category: "frameworks" },
+  { name: "Next.js", category: "frameworks" },
+  { name: "Vue.js", category: "frameworks" },
+  { name: "Angular", category: "frameworks" },
+  { name: "Node.js", category: "frameworks" },
+  { name: "Express", category: "frameworks" },
+  { name: "Django", category: "frameworks" },
+  { name: "Flask", category: "frameworks" },
+  { name: "Spring Boot", category: "frameworks" },
+  { name: "Ruby on Rails", category: "frameworks" },
+  { name: "Laravel", category: "frameworks" },
+  { name: "TensorFlow", category: "frameworks" },
+  { name: "PyTorch", category: "frameworks" },
+  { name: "React Native", category: "frameworks" },
+  { name: "Flutter", category: "frameworks" },
+  { name: "Tailwind CSS", category: "frameworks" },
+];
+
 async function main() {
   console.log("Seeding database...");
 
+  console.log("\nSeeding master skills...");
+  for (const skill of masterSkills) {
+    await prisma.skill.upsert({
+      where: { name: skill.name },
+      update: { category: skill.category },
+      create: skill,
+    });
+  }
+  console.log(`  Seeded ${masterSkills.length} master skills`);
+
+  console.log("\nSeeding occupations...");
   for (const occupation of sampleOccupations) {
     await prisma.occupation.upsert({
       where: { id: occupation.id },

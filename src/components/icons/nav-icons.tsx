@@ -145,3 +145,32 @@ export function SavedIcon({ className }: IconProps) {
     </svg>
   );
 }
+
+export function ProfileIcon({ className }: IconProps) {
+  return (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 22 22"
+      fill="none"
+      className={cn("h-5 w-5", className)}
+    >
+      <circle
+        cx="11"
+        cy="7"
+        r="4"
+        stroke="currentColor"
+        strokeWidth="1.57"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M3 20C3 16.134 6.58172 13 11 13C15.4183 13 19 16.134 19 20"
+        stroke="currentColor"
+        strokeWidth="1.57"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
