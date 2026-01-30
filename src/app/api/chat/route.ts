@@ -1,5 +1,5 @@
 import { openai } from "@ai-sdk/openai";
-import { streamText, convertToModelMessages } from "ai";
+import { streamText, convertToModelMessages, stepCountIs } from "ai";
 import { z } from "zod";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
@@ -25,6 +25,12 @@ The conviction score (0-100) measures how prepared a student is for a specific c
 - Education alignment (20%) - their education level vs. requirements
 - Engagement (20%) - how much they've explored the career
 
+IMPORTANT - Be proactive:
+- When a student says they completed the assessment, IMMEDIATELY use getAssessmentResults to look up their results and explain what their RIASEC profile means
+- After showing results, use searchCareers to suggest 3-5 specific careers that match their top RIASEC types
+- Always follow up with actionable guidance - never leave the student hanging
+- If a student seems unsure what to do next, take initiative and guide them
+
 If a student hasn't completed their RIASEC assessment, encourage them to do so.`;
 
 export async function POST(req: Request) {
@@ -40,6 +46,7 @@ export async function POST(req: Request) {
     model: openai("gpt-4o-mini"),
     system: systemPrompt,
     messages: await convertToModelMessages(messages),
+    stopWhen: stepCountIs(5),
     tools: {
       getUserProfile: {
         description: "Get the current user's profile information",
@@ -59,15 +66,14 @@ export async function POST(req: Request) {
 
       getAssessmentResults: {
         description:
-          "Get the user's RIASEC assessment results to understand their interests",
+          "Get the user's RIASEC assessment results to understand their interests. Returns partial or complete results.",
         inputSchema: z.object({}),
         execute: async () => {
           const assessment = await db.assessment.findFirst({
             where: {
               user: { clerkId: userId },
-              completedAt: { not: null },
             },
-            orderBy: { completedAt: "desc" },
+            orderBy: { createdAt: "desc" },
             select: {
               realistic: true,
               investigative: true,
@@ -75,20 +81,38 @@ export async function POST(req: Request) {
               social: true,
               enterprising: true,
               conventional: true,
+              questionsAnswered: true,
+              isComplete: true,
               completedAt: true,
             },
           });
 
           if (!assessment) {
             return {
-              completed: false,
-              message: "No completed assessment found",
+              hasAssessment: false,
+              message: "No assessment found. The student should take the RIASEC assessment.",
             };
           }
 
+          const totalQuestions = 30;
+          const isFullyComplete = assessment.isComplete && assessment.completedAt;
+
           return {
-            completed: true,
-            scores: assessment,
+            hasAssessment: true,
+            isFullyComplete,
+            questionsAnswered: assessment.questionsAnswered,
+            totalQuestions,
+            scores: {
+              realistic: assessment.realistic,
+              investigative: assessment.investigative,
+              artistic: assessment.artistic,
+              social: assessment.social,
+              enterprising: assessment.enterprising,
+              conventional: assessment.conventional,
+            },
+            recommendation: isFullyComplete
+              ? "Assessment complete - results are accurate"
+              : `Student has only answered ${assessment.questionsAnswered} of ${totalQuestions} questions. Use these preliminary scores to give guidance, but encourage completing the full assessment for more accurate career matches.`,
           };
         },
       },
