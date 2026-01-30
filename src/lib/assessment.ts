@@ -9,7 +9,6 @@ import { db } from "@/lib/db";
 import { OnetClient } from "@/lib/onet/client";
 
 const TOTAL_QUESTIONS = 30;
-const ONBOARDING_QUESTIONS = 6;
 
 type RiasecCategory = "R" | "I" | "A" | "S" | "E" | "C";
 

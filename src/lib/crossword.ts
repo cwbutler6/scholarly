@@ -150,7 +150,7 @@ export async function saveCrosswordProgress(
   });
 }
 
-export async function useCrosswordHint(
+export async function consumeCrosswordHint(
   crosswordId: string,
   userGrid: string[][]
 ): Promise<HintResult> {

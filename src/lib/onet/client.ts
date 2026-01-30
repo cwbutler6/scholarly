@@ -46,12 +46,6 @@ interface OnetElement {
   };
 }
 
-interface OnetTechnology {
-  title: { name: string };
-  category?: { name: string };
-  hot_technology?: boolean;
-}
-
 interface OnetRelatedOccupation {
   code: string;
   title: string;

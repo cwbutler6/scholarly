@@ -47,7 +47,7 @@ export function CrosswordChallengeModal({
     return Array.from({ length: crossword.rows }, () =>
       Array.from({ length: crossword.cols }, () => "")
     );
-  }, [crossword.userProgress?.userGrid, crossword.rows, crossword.cols]);
+  }, [crossword.userProgress, crossword.rows, crossword.cols]);
 
   const [userGrid, setUserGrid] = useState<string[][]>(initializeUserGrid);
   const [hintsRemaining, setHintsRemaining] = useState(
@@ -59,7 +59,7 @@ export function CrosswordChallengeModal({
     crossword.userProgress?.completed || false
   );
   const [result, setResult] = useState<SubmitResult | null>(null);
-  const [startTime] = useState(Date.now());
+  const startTimeRef = useRef<number>(0);
 
   const inputRefs = useRef<(HTMLInputElement | null)[][]>(
     Array.from({ length: crossword.rows }, () =>
@@ -76,9 +76,12 @@ export function CrosswordChallengeModal({
     year: "numeric",
   });
 
-  const isLetterCell = (row: number, col: number): boolean => {
-    return crossword.grid[row]?.[col]?.type === "letter";
-  };
+  const isLetterCell = useCallback(
+    (row: number, col: number): boolean => {
+      return crossword.grid[row]?.[col]?.type === "letter";
+    },
+    [crossword.grid]
+  );
 
   const getCellNumber = (row: number, col: number): number | undefined => {
     return crossword.grid[row]?.[col]?.number;
@@ -256,7 +259,7 @@ export function CrosswordChallengeModal({
         setResult(submitResult);
         if (submitResult.completed) {
           setCompleted(true);
-          const timeSpent = Math.floor((Date.now() - startTime) / 1000);
+          const timeSpent = Math.floor((Date.now() - startTimeRef.current) / 1000);
           track("crossword_completed", {
             crosswordId: crossword.id,
             hintsUsed: 3 - hintsRemaining,
@@ -265,7 +268,11 @@ export function CrosswordChallengeModal({
         }
       });
     }
-  }, [completed, crossword, userGrid, onSubmit, startTime, hintsRemaining, track]);
+  }, [completed, crossword, userGrid, onSubmit, hintsRemaining, track, isLetterCell]);
+
+  useEffect(() => {
+    startTimeRef.current = Date.now();
+  }, []);
 
   useEffect(() => {
     checkCompletion();

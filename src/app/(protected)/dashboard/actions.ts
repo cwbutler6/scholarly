@@ -2,7 +2,7 @@
 
 import { submitQuestionAnswer } from "@/lib/questions";
 import {
-  useCrosswordHint,
+  consumeCrosswordHint,
   submitCrossword,
   resetCrossword,
   saveCrosswordProgress,
@@ -15,11 +15,11 @@ export async function submitQOTDAnswer(
   return submitQuestionAnswer(questionId, selectedAnswer);
 }
 
-export async function useCrosswordHintAction(
+export async function getCrosswordHint(
   crosswordId: string,
   userGrid: string[][]
 ) {
-  return useCrosswordHint(crosswordId, userGrid);
+  return consumeCrosswordHint(crosswordId, userGrid);
 }
 
 export async function submitCrosswordAction(

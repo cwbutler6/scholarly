@@ -7,20 +7,19 @@ interface CareerTrackerProps {
 }
 
 export function CareerTracker({ occupationId }: CareerTrackerProps) {
-  const startTimeRef = useRef<number>(Date.now());
+  const startTimeRef = useRef<number>(0);
   const hasTrackedPageViewRef = useRef(false);
 
   useEffect(() => {
     if (hasTrackedPageViewRef.current) return;
     hasTrackedPageViewRef.current = true;
+    startTimeRef.current = Date.now();
 
     fetch("/api/careers/engagement", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ occupationId }),
     }).catch(console.error);
-
-    startTimeRef.current = Date.now();
 
     const trackTimeSpent = () => {
       const timeSpentSeconds = Math.floor(

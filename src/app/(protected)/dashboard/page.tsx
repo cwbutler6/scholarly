@@ -14,7 +14,7 @@ import {
 } from "./dashboard-client";
 import {
   submitQOTDAnswer,
-  useCrosswordHintAction,
+  getCrosswordHint,
   submitCrosswordAction,
   resetCrosswordAction,
   saveCrosswordProgressAction,
@@ -80,7 +80,7 @@ export default async function DashboardPage() {
           />
           <DashboardChallengeCard
             crossword={crossword}
-            onUseHint={useCrosswordHintAction}
+            onUseHint={getCrosswordHint}
             onSubmit={submitCrosswordAction}
             onReset={resetCrosswordAction}
             onSaveProgress={saveCrosswordProgressAction}

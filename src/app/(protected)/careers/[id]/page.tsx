@@ -76,7 +76,7 @@ export default async function CareerPage({
         </Link>
 
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-          <div className="flex flex-col gap-3">
+          <div className="flex min-w-0 flex-1 flex-col gap-3">
             {career.category && (
               <span className="w-fit rounded-[30px] bg-[#313035] px-2.5 py-2.5 text-sm font-medium text-white">
                 {career.category}
@@ -90,7 +90,7 @@ export default async function CareerPage({
             </p>
           </div>
 
-          <div className="flex w-full flex-col gap-4 rounded-2xl border-t border-white/50 bg-[#E6E6E6]/50 p-4 md:gap-6 md:p-[25px] lg:w-[384px]">
+          <div className="flex w-full shrink-0 flex-col gap-4 rounded-2xl border-t border-white/50 bg-[#E6E6E6]/50 p-4 md:gap-6 md:p-[25px] lg:w-[340px] xl:w-[384px]">
             <div className="flex items-center gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-[14px] bg-[#00BC7D]">
                 <DollarSign className="h-6 w-6 text-white" />
@@ -111,13 +111,13 @@ export default async function CareerPage({
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-[14px] bg-[#AD46FF]">
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] bg-[#AD46FF]">
                 <GraduationCap className="h-6 w-6 text-white" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="text-xs text-gray-500">EDUCATION</p>
-                <p className="text-lg font-bold leading-7 tracking-[-0.44px] text-[#4A4A4A]">
+                <p className="text-base font-bold leading-6 tracking-[-0.44px] text-[#4A4A4A]">
                   {educationDisplay}
                 </p>
               </div>
@@ -148,7 +148,7 @@ export default async function CareerPage({
                 `${career.title}s apply their expertise to various aspects of their field. They are professionals who work on diverse projects and solve complex problems in their area of specialization.`}
             </p>
           </div>
-          <div className="flex justify-center md:flex-shrink-0">
+          <div className="flex justify-center md:shrink-0">
             <ConvictionScore score={career.matchPercent} />
           </div>
         </div>

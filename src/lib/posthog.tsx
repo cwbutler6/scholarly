@@ -12,6 +12,7 @@ export type AnalyticsEvent =
   | { name: "career_unsaved"; properties: { careerId: string; careerTitle: string } }
   | { name: "career_liked"; properties: { careerId: string; careerTitle: string; rating: number } }
   | { name: "assessment_started"; properties: { type: string } }
+  | { name: "assessment_partial_complete"; properties: { type: string; questionsAnswered: number } }
   | { name: "assessment_completed"; properties: { type: string; scores?: Record<string, number> } }
   | { name: "onboarding_step_completed"; properties: { step: string; stepNumber: number } }
   | { name: "onboarding_completed"; properties: Record<string, never> }
