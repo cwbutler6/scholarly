@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
+import { Prisma } from "@/generated/prisma";
 
 export type EventType =
   | "career_viewed"
@@ -85,8 +86,8 @@ export async function POST(request: NextRequest) {
       data: events.map((event) => ({
         userId: user.id,
         type: event.type,
-        careerId: event.careerId || null,
-        metadata: event.metadata || null,
+        careerId: event.careerId ?? null,
+        metadata: event.metadata ?? Prisma.JsonNull,
       })),
     });
 
