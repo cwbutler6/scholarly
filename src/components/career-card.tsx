@@ -40,8 +40,8 @@ export function CareerCard({
   };
 
   return (
-    <div className="group relative flex h-[539px] w-[375px] shrink-0 flex-col overflow-hidden rounded-[15px] border border-black/10 bg-[#F0F0F0]">
-      <div className="relative h-[270px] w-full overflow-hidden">
+    <div className="group relative flex h-auto min-h-[450px] w-[280px] shrink-0 flex-col overflow-hidden rounded-[15px] border border-black/10 bg-[#F0F0F0] md:h-[539px] md:w-[375px]">
+      <div className="relative h-[200px] w-full overflow-hidden md:h-[270px]">
         {imageUrl ? (
           <Image
             src={imageUrl}
@@ -61,7 +61,7 @@ export function CareerCard({
             onSave?.();
           }}
           className={cn(
-            "absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-gray-800/60 text-white transition-colors hover:bg-gray-800/80",
+            "absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-full bg-gray-800/60 text-white transition-colors hover:bg-gray-800/80 md:right-4 md:top-4",
             isSaved && "bg-red-500/80 hover:bg-red-500"
           )}
         >
@@ -69,27 +69,27 @@ export function CareerCard({
         </button>
       </div>
 
-      <div className="flex flex-1 flex-col p-5">
+      <div className="flex flex-1 flex-col p-4 md:p-5">
         <h3 
-          className="mb-2 truncate text-xl font-bold text-[#0A0A0A]"
+          className="mb-2 truncate text-lg font-bold text-[#0A0A0A] md:text-xl"
           title={title}
         >
           {title}
         </h3>
-        <p className="mb-6 line-clamp-2 text-base text-gray-500">{description}</p>
+        <p className="mb-4 line-clamp-2 text-sm text-gray-500 md:mb-6 md:text-base">{description}</p>
 
-        <div className="mb-6 grid grid-cols-3 divide-x divide-gray-300 text-center">
-          <div className="flex flex-col gap-1 px-2">
-            <span className="text-lg font-semibold text-green-500">{matchPercent ?? 0}%</span>
-            <span className="text-sm text-gray-500">Match</span>
+        <div className="mb-4 grid grid-cols-3 divide-x divide-gray-300 text-center md:mb-6">
+          <div className="flex flex-col gap-0.5 px-1 md:gap-1 md:px-2">
+            <span className="text-base font-semibold text-green-500 md:text-lg">{matchPercent ?? 0}%</span>
+            <span className="text-xs text-gray-500 md:text-sm">Match</span>
           </div>
-          <div className="flex flex-col gap-1 px-2">
-            <span className="text-lg font-semibold text-purple-500">{salary ?? "N/A"}</span>
-            <span className="text-sm text-gray-500">Salary</span>
+          <div className="flex flex-col gap-0.5 px-1 md:gap-1 md:px-2">
+            <span className="text-base font-semibold text-purple-500 md:text-lg">{salary ?? "N/A"}</span>
+            <span className="text-xs text-gray-500 md:text-sm">Salary</span>
           </div>
-          <div className="flex flex-col gap-1 px-2">
-            <span className="text-lg font-semibold text-green-500">{formatGrowth(growth)}</span>
-            <span className="text-sm text-gray-500">Growth</span>
+          <div className="flex flex-col gap-0.5 px-1 md:gap-1 md:px-2">
+            <span className="text-base font-semibold text-green-500 md:text-lg">{formatGrowth(growth)}</span>
+            <span className="text-xs text-gray-500 md:text-sm">Growth</span>
           </div>
         </div>
 

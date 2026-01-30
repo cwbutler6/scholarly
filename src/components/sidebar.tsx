@@ -32,7 +32,7 @@ export function Sidebar({ userInitials, userImageUrl }: SidebarProps) {
   const isOnCareerPage = pathname.startsWith("/careers/");
 
   return (
-    <aside className="fixed left-0 top-0 z-40 flex h-screen w-16 flex-col items-center border-r bg-white py-6">
+    <aside className="fixed left-0 top-0 z-40 hidden h-screen w-16 flex-col items-center border-r bg-white py-6 md:flex">
       <nav className="flex flex-1 flex-col items-center justify-center gap-2">
         {navItems.map((item) => {
           const isActive =
@@ -74,7 +74,7 @@ export function Sidebar({ userInitials, userImageUrl }: SidebarProps) {
                 className="h-full w-full object-cover"
               />
             ) : (
-              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 text-xs font-bold text-white">
+              <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-purple-500 to-pink-500 text-xs font-bold text-white">
                 {userInitials}
               </div>
             )}

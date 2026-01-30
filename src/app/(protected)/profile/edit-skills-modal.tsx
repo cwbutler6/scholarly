@@ -72,19 +72,20 @@ export function EditSkillsModal({
     : filteredCategories;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="flex max-h-[90vh] w-full max-w-2xl flex-col rounded-2xl bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b px-6 py-4">
-          <h2 className="text-xl font-bold text-gray-900">Manage Skills</h2>
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center">
+      <div className="flex max-h-[90vh] w-full flex-col rounded-t-2xl bg-white shadow-xl sm:max-w-2xl sm:rounded-2xl">
+        <div className="flex items-center justify-between border-b px-4 py-3 sm:px-6 sm:py-4">
+          <h2 className="text-lg font-bold text-gray-900 sm:text-xl">Manage Skills</h2>
           <button
+            title="Close"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100"
+            className="flex h-11 w-11 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 sm:h-8 sm:w-8"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="border-b px-6 py-4">
+        <div className="border-b px-4 py-3 sm:px-6 sm:py-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <input
@@ -92,14 +93,14 @@ export function EditSkillsModal({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search skills..."
-              className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+              className="h-11 w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
             />
           </div>
 
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="-mx-1 mt-3 flex flex-wrap gap-1.5 sm:gap-2">
             <button
               onClick={() => setSelectedCategory(null)}
-              className={`rounded-full px-3 py-1 text-sm font-medium transition-colors ${
+              className={`min-h-[36px] rounded-full px-3 py-1.5 text-sm font-medium transition-colors sm:min-h-0 sm:py-1 ${
                 !selectedCategory
                   ? "bg-purple-100 text-purple-700"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -113,7 +114,7 @@ export function EditSkillsModal({
                 onClick={() =>
                   setSelectedCategory(selectedCategory === cat ? null : cat)
                 }
-                className={`rounded-full px-3 py-1 text-sm font-medium transition-colors ${
+                className={`min-h-[36px] rounded-full px-3 py-1.5 text-sm font-medium transition-colors sm:min-h-0 sm:py-1 ${
                   selectedCategory === cat
                     ? "bg-purple-100 text-purple-700"
                     : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -125,7 +126,7 @@ export function EditSkillsModal({
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-6 py-4">
+        <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6">
           {displayCategories.map((category) => {
             const skills = skillsByCategory[category]?.filter((skill) =>
               skill.name.toLowerCase().includes(search.toLowerCase())
@@ -170,6 +171,7 @@ export function EditSkillsModal({
                             {editingProficiency === skill.id ? (
                               <>
                                 <input
+                                  title="Proficiency"
                                   type="range"
                                   min="0"
                                   max="100"

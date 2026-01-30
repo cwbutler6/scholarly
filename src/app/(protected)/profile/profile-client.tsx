@@ -70,21 +70,21 @@ export function ProfileClient({
 
   return (
     <div className="min-h-screen bg-[#F5F5F5]">
-      <div className="mx-auto max-w-6xl px-6 py-8">
-        <div className="mb-6 grid grid-cols-3 gap-6">
+      <div className="mx-auto max-w-6xl px-4 py-4 md:px-6 md:py-8">
+        <div className="mb-6 grid grid-cols-1 gap-4 md:gap-6 lg:grid-cols-3">
           <div
-            className="flex h-96 flex-col items-start rounded-3xl p-8 text-white"
+            className="flex h-auto min-h-[280px] flex-col items-start rounded-3xl p-6 text-white md:h-96 md:p-8"
             style={{
               background: "linear-gradient(180deg, #AD46FF 0%, #D946EF 50%, #F6339A 100%)",
             }}
           >
-            <div className="mb-6 flex h-[100px] w-[100px] items-center justify-center overflow-hidden rounded-full border-4 border-white bg-white">
-              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#AD46FF] to-[#F6339A] text-3xl font-bold text-white">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-white md:mb-6 md:h-[100px] md:w-[100px]">
+              <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-[#AD46FF] to-[#F6339A] text-xl font-bold text-white md:text-3xl">
                 {initials}
               </div>
             </div>
-            <h1 className="text-4xl font-bold leading-tight">{fullName}</h1>
-            <div className="mt-auto w-full">
+            <h1 className="text-2xl font-bold leading-tight md:text-4xl">{fullName}</h1>
+            <div className="mt-auto w-full pt-4">
               <button
                 onClick={() => setShowPersonalInfoModal(true)}
                 className="w-full rounded-full bg-white/20 px-6 py-3.5 font-medium text-white backdrop-blur-sm transition-colors hover:bg-white/30"
@@ -94,8 +94,8 @@ export function ProfileClient({
             </div>
           </div>
 
-          <div className="rounded-3xl bg-white p-6">
-            <h2 className="mb-6 text-xl font-bold text-gray-900">
+          <div className="rounded-3xl bg-white p-4 md:p-6">
+            <h2 className="mb-4 text-lg font-bold text-gray-900 md:mb-6 md:text-xl">
               Personal Info
             </h2>
             <div className="space-y-5">
@@ -136,9 +136,9 @@ export function ProfileClient({
             </div>
           </div>
 
-          <div className="rounded-3xl bg-white p-6">
+          <div className="rounded-3xl bg-white p-4 md:p-6">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-gray-900">About Me</h2>
+              <h2 className="text-lg font-bold text-gray-900 md:text-xl">About Me</h2>
               <button
                 onClick={() => setShowAboutModal(true)}
                 className="text-sm font-medium text-[#22C55E] hover:underline"
@@ -158,8 +158,8 @@ export function ProfileClient({
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-6">
-          <div className="col-span-2 rounded-3xl bg-white p-6">
+        <div className="grid grid-cols-1 gap-4 md:gap-6 lg:grid-cols-3">
+          <div className="rounded-3xl bg-white p-4 md:p-6 lg:col-span-2">
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-xl font-bold text-gray-900">
                 Skills & Interests
@@ -172,7 +172,7 @@ export function ProfileClient({
               </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
               <div>
                 {technicalSkills.length > 0 && (
                   <div className="mb-6">
@@ -302,21 +302,22 @@ export function ProfileClient({
           </div>
 
           <div
-            className="flex h-[300px] flex-col items-center justify-center rounded-3xl p-8 text-white"
+            className="flex h-auto min-h-[200px] flex-col items-center justify-center rounded-3xl p-6 text-white md:h-[300px] md:p-8"
             style={{
               background: "linear-gradient(180deg, #315A3F 0%, #2D640B 100%)",
             }}
           >
-            <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-white/20">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white/20 md:h-20 md:w-20">
               <Image
                 src="/images/icon-graduation-cap.png"
                 alt="Student"
                 width={48}
                 height={48}
+                className="h-8 w-8 md:h-12 md:w-12"
               />
             </div>
-            <h3 className="mb-2 text-2xl font-bold">Student Profile</h3>
-            <p className="text-center text-white/70">
+            <h3 className="mb-2 text-xl font-bold md:text-2xl">Student Profile</h3>
+            <p className="text-center text-sm text-white/70 md:text-base">
               {accountTypeShort[user.accountType || ""] || "Student"}
               {user.graduationYear && ` · Class of ${user.graduationYear}`}
             </p>

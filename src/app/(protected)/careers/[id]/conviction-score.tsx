@@ -8,7 +8,7 @@ export function ConvictionScore({ score }: ConvictionScoreProps) {
   const clampedScore = Math.min(100, Math.max(0, score));
 
   return (
-    <div className="flex w-[320px] flex-col gap-6 rounded-[14px] border border-gray-200 bg-white pb-[1px] pl-[25px] pr-[25px] pt-[25px]">
+    <div className="flex w-full max-w-[320px] flex-col gap-4 rounded-[14px] border border-gray-200 bg-white p-4 md:gap-6 md:p-[25px] md:pb-[1px]">
       <h3 className="text-xl font-semibold leading-7 tracking-[-0.45px] text-gray-900">
         Conviction score
       </h3>

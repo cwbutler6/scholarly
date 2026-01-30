@@ -49,13 +49,14 @@ export function AiChatDrawer({ isOpen, onClose }: AiChatDrawerProps) {
 
       <div
         className={cn(
-          "fixed right-4 top-[97px] z-50 flex h-[908px] max-h-[calc(100vh-120px)] w-[454px] flex-col bg-white transition-transform duration-300 ease-in-out",
-          "rounded-3xl border border-black/15 shadow-[0_4px_12px_0_rgba(0,0,0,0.12)]",
-          isOpen ? "translate-x-0" : "translate-x-[calc(100%+16px)]"
+          "fixed z-50 flex flex-col bg-white transition-transform duration-300 ease-in-out",
+          "inset-x-0 bottom-0 top-0 md:inset-auto md:right-4 md:top-[97px] md:h-[908px] md:max-h-[calc(100vh-120px)] md:w-[454px]",
+          "md:rounded-3xl md:border md:border-black/15 md:shadow-[0_4px_12px_0_rgba(0,0,0,0.12)]",
+          isOpen ? "translate-x-0" : "translate-x-full md:translate-x-[calc(100%+16px)]"
         )}
       >
-        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
-          <h2 className="text-lg font-medium leading-none text-[#989898]">
+        <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3 md:px-6 md:py-4">
+          <h2 className="text-base font-medium leading-none text-[#989898] md:text-lg">
             Conversation with AI Mentor
           </h2>
           <div className="flex items-center gap-2">
@@ -63,7 +64,7 @@ export function AiChatDrawer({ isOpen, onClose }: AiChatDrawerProps) {
               <button
                 onClick={handleClearChat}
                 title="New chat"
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-600 transition-colors hover:bg-gray-200"
+                className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-600 transition-colors hover:bg-gray-200 md:h-9 md:w-9"
               >
                 <RotateCcw className="h-4 w-4" />
               </button>
@@ -71,14 +72,14 @@ export function AiChatDrawer({ isOpen, onClose }: AiChatDrawerProps) {
             <button
               onClick={onClose}
               title="Close chat"
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-600 transition-colors hover:bg-gray-200"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-600 transition-colors hover:bg-gray-200 md:h-9 md:w-9"
             >
               <ArrowRight className="h-4 w-4" />
             </button>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-6 py-4">
+        <div className="flex-1 overflow-y-auto px-4 py-4 md:px-6">
           {messages.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center text-center">
               <div className="mb-4 text-gray-400">
@@ -138,12 +139,12 @@ export function AiChatDrawer({ isOpen, onClose }: AiChatDrawerProps) {
         </div>
 
         {messages.length === 0 && (
-          <div className="flex gap-2.5 overflow-x-auto px-6 pb-4">
+          <div className="flex gap-2.5 overflow-x-auto px-4 pb-4 md:px-6">
             {suggestionPrompts.map((prompt, index) => (
               <button
                 key={index}
                 onClick={() => handleSuggestionClick(prompt)}
-                className="w-[250px] shrink-0 rounded-2xl bg-[#F6F6F6] p-4 text-left text-base font-normal leading-none text-[#898989] transition-colors hover:bg-gray-200"
+                className="w-[200px] shrink-0 rounded-2xl bg-[#F6F6F6] p-3 text-left text-sm font-normal leading-tight text-[#898989] transition-colors hover:bg-gray-200 md:w-[250px] md:p-4 md:text-base md:leading-none"
               >
                 {prompt}
               </button>
@@ -181,7 +182,7 @@ export function AiChatDrawer({ isOpen, onClose }: AiChatDrawerProps) {
               title="Send message"
               disabled={!inputValue.trim() || isLoading}
               className={cn(
-                "flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors",
+                "flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-colors md:h-8 md:w-8",
                 inputValue.trim() && !isLoading
                   ? "bg-gray-900 text-white hover:bg-gray-800"
                   : "bg-gray-100 text-gray-400"

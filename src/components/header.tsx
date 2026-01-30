@@ -31,7 +31,12 @@ function DefaultHeaderActions() {
   return <AiChatButton />;
 }
 
-export function HeaderProvider({ children }: { children: ReactNode }) {
+interface HeaderProviderProps {
+  children: ReactNode;
+  mobileMenu?: ReactNode;
+}
+
+export function HeaderProvider({ children, mobileMenu }: HeaderProviderProps) {
   const [actions, setActions] = useState<ReactNode>(<DefaultHeaderActions />);
 
   const resetActions = useCallback(
@@ -46,14 +51,17 @@ export function HeaderProvider({ children }: { children: ReactNode }) {
 
   return (
     <HeaderContext.Provider value={contextValue}>
-      <header className="flex shrink-0 items-center justify-between bg-white px-6">
-        <Image
-          src="/images/logo-scholarly-full.png"
-          alt="Scholarly"
-          width={115}
-          height={37}
-          className="h-auto w-auto"
-        />
+      <header className="flex h-14 shrink-0 items-center justify-between bg-white px-4 md:h-16 md:px-6">
+        <div className="flex items-center gap-2">
+          {mobileMenu}
+          <Image
+            src="/images/logo-scholarly-full.png"
+            alt="Scholarly"
+            width={115}
+            height={37}
+            className="h-auto w-[90px] md:w-[115px]"
+          />
+        </div>
         {actions}
       </header>
       {children}

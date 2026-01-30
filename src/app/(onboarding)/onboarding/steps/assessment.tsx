@@ -90,25 +90,25 @@ export function AssessmentStep({
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-8">
+    <div className="flex min-h-screen flex-col items-center justify-center p-4 md:p-8">
       <div className="w-full max-w-xl text-center">
-        <h1 className="mb-1 text-2xl font-bold text-gray-900">Assessment</h1>
-        <p className="mb-6 text-sm text-gray-500">
+        <h1 className="mb-1 text-xl font-bold text-gray-900 md:text-2xl">Assessment</h1>
+        <p className="mb-4 text-sm text-gray-500 md:mb-6">
           Answer a few questions<br />(we promise it&apos;s not a lot!)
         </p>
 
-        <div className="mb-8 h-2 overflow-hidden rounded-full bg-gray-200">
+        <div className="mb-6 h-2 overflow-hidden rounded-full bg-gray-200 md:mb-8">
           <div
             className="h-full bg-[#00B2FF] transition-all duration-300"
             style={{ width: `${progress}%` }}
           />
         </div>
 
-        <h2 className="mb-12 text-xl font-bold text-gray-900">
+        <h2 className="mb-8 text-lg font-bold text-gray-900 md:mb-12 md:text-xl">
           {currentQuestion.text}
         </h2>
 
-        <div className="flex justify-center gap-4 md:gap-8">
+        <div className="flex justify-center gap-2 sm:gap-4 md:gap-8">
           {ratings.map((rating) => (
             <button
               key={rating.value}
@@ -123,20 +123,20 @@ export function AssessmentStep({
                 alt={rating.label.replace("\n", " ")}
                 width={80}
                 height={80}
-                className="mb-2 h-20 w-20 object-contain"
+                className="mb-1 h-12 w-12 object-contain sm:h-16 sm:w-16 md:mb-2 md:h-20 md:w-20"
               />
-              <span className="text-xs text-gray-600 whitespace-pre-line">
+              <span className="whitespace-pre-line text-[10px] text-gray-600 sm:text-xs">
                 {rating.label}
               </span>
             </button>
           ))}
         </div>
 
-        <div className="mt-16 flex justify-center gap-4">
+        <div className="mt-10 flex justify-center gap-4 md:mt-16">
           <button
             onClick={onBack}
             aria-label="Go back to profile"
-            className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-900 text-white transition-colors hover:bg-gray-700"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-900 text-white transition-colors hover:bg-gray-700 md:h-12 md:w-12"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -150,7 +150,7 @@ export function AssessmentStep({
                 onProgress?.(answers, prevIndex);
               }}
               aria-label="Previous question"
-              className="flex h-12 w-12 items-center justify-center rounded-full border border-gray-300 text-gray-600 transition-colors hover:bg-gray-100"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-gray-300 text-gray-600 transition-colors hover:bg-gray-100 md:h-12 md:w-12"
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -159,7 +159,7 @@ export function AssessmentStep({
           )}
         </div>
 
-        <p className="mt-4 text-sm text-gray-400">
+        <p className="mt-3 text-sm text-gray-400 md:mt-4">
           {currentIndex + 1} of {riasecQuestions.length}
         </p>
       </div>

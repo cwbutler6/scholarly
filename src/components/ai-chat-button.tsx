@@ -9,22 +9,22 @@ export function AiChatButton() {
   return (
     <button
       onClick={openChat}
-      className="flex h-12 items-center gap-2.5 rounded-[24px] bg-linear-to-r from-[#FFEB7B] to-[#FE9900] py-[5px] pl-[5px] pr-5 font-medium text-gray-900 shadow-sm transition-all hover:shadow-md"
+      className="flex h-11 items-center gap-2 rounded-[24px] bg-linear-to-r from-[#FFEB7B] to-[#FE9900] p-1 font-medium text-gray-900 shadow-sm transition-all hover:shadow-md md:h-12 md:gap-2.5 md:py-[5px] md:pl-[5px] md:pr-5"
     >
       <Image
         src="/images/ai-chat-orb.png"
         alt=""
         width={38}
         height={38}
-        className="h-[38px] w-[38px] rounded-full"
+        className="h-[34px] w-[34px] rounded-full md:h-[38px] md:w-[38px]"
       />
-      <span>AI Chat</span>
+      <span className="hidden md:inline">AI Chat</span>
       <Image
         src="/images/ai-chat-icon.svg"
         alt=""
         width={20}
         height={20}
-        className="h-5 w-5"
+        className="hidden h-5 w-5 md:block"
       />
     </button>
   );

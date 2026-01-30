@@ -52,27 +52,29 @@ export function EditPersonalInfoModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-gray-900">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center">
+      <div className="max-h-[90vh] w-full overflow-y-auto rounded-t-2xl bg-white p-4 shadow-xl sm:max-w-lg sm:rounded-2xl sm:p-6">
+        <div className="mb-4 flex items-center justify-between sm:mb-6">
+          <h2 className="text-lg font-bold text-gray-900 sm:text-xl">
             Edit Personal Information
           </h2>
           <button
+            title="Close"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100"
+            className="flex h-11 w-11 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 sm:h-8 sm:w-8"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className="mb-1 block text-sm font-medium text-gray-700">
                 First Name
               </label>
               <input
+                title="First Name"
                 type="text"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
@@ -84,6 +86,7 @@ export function EditPersonalInfoModal({
                 Last Name
               </label>
               <input
+                title="Last Name"
                 type="text"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
@@ -110,6 +113,7 @@ export function EditPersonalInfoModal({
               Account Type
             </label>
             <select
+              title="Account Type"
               value={accountType}
               onChange={(e) => setAccountType(e.target.value)}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
@@ -122,7 +126,7 @@ export function EditPersonalInfoModal({
             </select>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className="mb-1 block text-sm font-medium text-gray-700">
                 Graduation Year
@@ -142,6 +146,7 @@ export function EditPersonalInfoModal({
                 Date of Birth
               </label>
               <input
+                title="Date of Birth"
                 type="date"
                 value={dateOfBirth}
                 onChange={(e) => setDateOfBirth(e.target.value)}
@@ -150,18 +155,18 @@ export function EditPersonalInfoModal({
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4">
+          <div className="flex flex-col-reverse gap-3 pt-4 sm:flex-row sm:justify-end">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg px-4 py-2 text-gray-600 hover:bg-gray-100"
+              className="h-11 rounded-lg px-4 py-2 text-gray-600 hover:bg-gray-100"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isPending}
-              className="rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-2 font-medium text-white hover:opacity-90 disabled:opacity-50"
+              className="h-11 rounded-lg bg-linear-to-r from-purple-500 to-pink-500 px-6 py-2 font-medium text-white hover:opacity-90 disabled:opacity-50"
             >
               {isPending ? "Saving..." : "Save Changes"}
             </button>

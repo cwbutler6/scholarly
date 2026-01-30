@@ -27,11 +27,13 @@ model User {
   accountType    String?   @default("high_school") @map("account_type")
   graduationYear Int?      @map("graduation_year")
 
-  assessments    Assessment[]
-  savedCareers   SavedCareer[]
-  chatSessions   ChatSession[]
-  userSkills     UserSkill[]
-  userInterests  UserInterest[]
+  assessments       Assessment[]
+  savedCareers      SavedCareer[]
+  chatSessions      ChatSession[]
+  userSkills        UserSkill[]
+  userInterests     UserInterest[]
+  videoWatches      CareerVideoWatch[]
+  careerEngagements CareerEngagement[]
 
   @@map("users")
 }
@@ -73,66 +75,152 @@ model SavedCareer {
 
 /// O*NET occupation data
 model Occupation {
-  id              String  @id
-  title           String
-  description     String?
-  imageUrl        String? @map("image_url")
-  category        String?
-  jobZone         Int?    @map("job_zone")
+  id          String  @id
+  title       String
+  description String?
+  whatTheyDo  String? @map("what_they_do")
+  imageUrl    String? @map("image_url")
+
+  majorGroup String? @map("major_group")
+  minorGroup String? @map("minor_group")
+  category   String?
+  jobZone    Int?    @map("job_zone")
+
   brightOutlook   Boolean @default(false) @map("bright_outlook")
   greenOccupation Boolean @default(false) @map("green_occupation")
-  education       String?
+  stemOccupation  Boolean @default(false) @map("stem_occupation")
 
-  riasecRealistic     Int? @map("riasec_realistic")
-  riasecInvestigative Int? @map("riasec_investigative")
-  riasecArtistic      Int? @map("riasec_artistic")
-  riasecSocial        Int? @map("riasec_social")
-  riasecEnterprising  Int? @map("riasec_enterprising")
-  riasecConventional  Int? @map("riasec_conventional")
+  riasecRealistic     Float? @map("riasec_realistic")
+  riasecInvestigative Float? @map("riasec_investigative")
+  riasecArtistic      Float? @map("riasec_artistic")
+  riasecSocial        Float? @map("riasec_social")
+  riasecEnterprising  Float? @map("riasec_enterprising")
+  riasecConventional  Float? @map("riasec_conventional")
 
-  medianWage      Int?    @map("median_wage")
-  medianWageHigh  Int?    @map("median_wage_high")
-  jobGrowth       String? @map("job_growth")
-  totalEmployment Int?    @map("total_employment")
+  medianWage        Int?    @map("median_wage")
+  medianWageHigh    Int?    @map("median_wage_high")
+  wagePercentile10  Int?    @map("wage_percentile_10")
+  wagePercentile90  Int?    @map("wage_percentile_90")
+  totalEmployment   Int?    @map("total_employment")
+  jobGrowth         String? @map("job_growth")
+  projectedGrowth   Float?  @map("projected_growth")
+  projectedOpenings Int?    @map("projected_openings")
 
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  typicalEducation String? @map("typical_education")
+  education        String?
 
-  savedBy   SavedCareer[]
-  skills    OccupationSkill[]
-  abilities OccupationAbility[]
+  onetVersion String?   @map("onet_version")
+  lastSynced  DateTime? @map("last_synced")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  savedBy      SavedCareer[]
+  skills       OccupationSkill[]
+  knowledge    OccupationKnowledge[]
+  abilities    OccupationAbility[]
+  technologies OccupationTechnology[]
+  workActivities OccupationWorkActivity[]
+  relatedTo    OccupationRelation[] @relation("source")
+  relatedFrom  OccupationRelation[] @relation("target")
 
   @@index([jobZone])
   @@index([brightOutlook])
   @@index([category])
+  @@index([majorGroup])
   @@map("occupations")
 }
 
-/// Skills associated with an occupation
+/// Skills associated with an occupation (O*NET standardized skills)
 model OccupationSkill {
-  id           String @id @default(cuid())
-  occupationId String @map("occupation_id")
+  id           String  @id @default(cuid())
+  occupationId String  @map("occupation_id")
+  elementId    String? @map("element_id")
   name         String
-  type         String @default("technical")
-  importance   Int?
+  type         String  @default("technical")
+  importance   Float?
+  level        Float?
 
   occupation Occupation @relation(fields: [occupationId], references: [id], onDelete: Cascade)
 
   @@unique([occupationId, name])
+  @@index([name])
   @@map("occupation_skills")
+}
+
+/// Knowledge areas associated with an occupation
+model OccupationKnowledge {
+  id           String @id @default(cuid())
+  occupationId String @map("occupation_id")
+  elementId    String @map("element_id")
+  name         String
+  importance   Float?
+  level        Float?
+
+  occupation Occupation @relation(fields: [occupationId], references: [id], onDelete: Cascade)
+
+  @@unique([occupationId, elementId])
+  @@index([name])
+  @@map("occupation_knowledge")
 }
 
 /// Abilities associated with an occupation
 model OccupationAbility {
-  id           String @id @default(cuid())
-  occupationId String @map("occupation_id")
+  id           String  @id @default(cuid())
+  occupationId String  @map("occupation_id")
+  elementId    String? @map("element_id")
   name         String
-  importance   Int?
+  importance   Float?
+  level        Float?
 
   occupation Occupation @relation(fields: [occupationId], references: [id], onDelete: Cascade)
 
   @@unique([occupationId, name])
+  @@index([name])
   @@map("occupation_abilities")
+}
+
+/// Technology skills and tools used in an occupation
+model OccupationTechnology {
+  id            String  @id @default(cuid())
+  occupationId  String  @map("occupation_id")
+  name          String
+  hotTechnology Boolean @default(false) @map("hot_technology")
+  categoryName  String? @map("category_name")
+
+  occupation Occupation @relation(fields: [occupationId], references: [id], onDelete: Cascade)
+
+  @@unique([occupationId, name])
+  @@index([hotTechnology])
+  @@map("occupation_technologies")
+}
+
+/// Work activities performed in an occupation
+model OccupationWorkActivity {
+  id           String @id @default(cuid())
+  occupationId String @map("occupation_id")
+  elementId    String @map("element_id")
+  name         String
+  importance   Float?
+  level        Float?
+
+  occupation Occupation @relation(fields: [occupationId], references: [id], onDelete: Cascade)
+
+  @@unique([occupationId, elementId])
+  @@map("occupation_work_activities")
+}
+
+/// Related occupations for career exploration
+model OccupationRelation {
+  id         String @id @default(cuid())
+  sourceId   String @map("source_id")
+  targetId   String @map("target_id")
+  similarity Float?
+
+  source Occupation @relation("source", fields: [sourceId], references: [id], onDelete: Cascade)
+  target Occupation @relation("target", fields: [targetId], references: [id], onDelete: Cascade)
+
+  @@unique([sourceId, targetId])
+  @@map("occupation_relations")
 }
 
 /// AI chat sessions for career coaching
@@ -197,4 +285,43 @@ model UserInterest {
 
   @@unique([userId, name])
   @@map("user_interests")
+}
+
+/// Tracks user video watch progress for career exploration
+model CareerVideoWatch {
+  id           String   @id @default(cuid())
+  userId       String   @map("user_id")
+  occupationId String   @map("occupation_id")
+  videoId      String   @map("video_id")
+  videoTitle   String?  @map("video_title")
+  videoUrl     String?  @map("video_url")
+  duration     Int?
+  watchedSeconds Int    @default(0) @map("watched_seconds")
+  completed    Boolean  @default(false)
+  watchedAt    DateTime @default(now()) @map("watched_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, occupationId, videoId])
+  @@index([userId, occupationId])
+  @@map("career_video_watches")
+}
+
+/// Tracks overall user engagement with a career (page views, time spent)
+model CareerEngagement {
+  id           String   @id @default(cuid())
+  userId       String   @map("user_id")
+  occupationId String   @map("occupation_id")
+  pageViews    Int      @default(0) @map("page_views")
+  timeSpentSeconds Int  @default(0) @map("time_spent_seconds")
+  lastViewedAt DateTime @default(now()) @map("last_viewed_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, occupationId])
+  @@index([userId])
+  @@map("career_engagements")
 }
